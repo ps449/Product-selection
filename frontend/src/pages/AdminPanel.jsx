@@ -1,11 +1,29 @@
 import { useState, useEffect } from 'react';
-import { Save, AlertCircle, Settings } from 'lucide-react';
+import { Save, Settings } from 'lucide-react';
 
 export default function AdminPanel() {
   const [weights, setWeights] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/v1/settings')
+      .then(res => res.json())
+      .then(data => {
+        // convert to percentage for display
+        const displayWeights = {};
+        for (const [k, v] of Object.entries(data.weights)) {
+          displayWeights[k] = Math.round(v * 100);
+        }
+        setWeights(displayWeights);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setIsLoading(false);
+      });
+  }, []);
 
   const handleSave = async () => {
     // Validate sum is 100
@@ -37,6 +55,13 @@ export default function AdminPanel() {
         setMessage('錯誤: ' + err.detail);
       }
     } catch (e) {
+      console.error(e);
+      setMessage('錯誤: 無法連線至伺服器');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading || !weights) return <div className="page-container">載入中...</div>;
 
   const fields = [
