@@ -4,6 +4,11 @@ import urllib.parse
 import json
 import statistics
 import threading
+import os
+
+# Fix Playwright browser path for PyInstaller
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "0"
+
 try:
     from playwright.sync_api import sync_playwright
 except ImportError:

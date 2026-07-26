@@ -1,10 +1,15 @@
-from fastapi import FastAPI
+import time
+import os
+
+# Fix Playwright browser path for PyInstaller
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "0"
+
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from api import router as api_router, admin_settings, trends_service
 from services.email_service import EmailService
-import os
 import asyncio
 from datetime import datetime
 
