@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Compass, Search, TrendingUp, AlertTriangle, Database, Box } from 'lucide-react';
+import InputPage from './InputPage';
 
 export default function DiscoveryPage() {
   const [data, setData] = useState({ columns: [], items: [] });
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('social');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.autoFill ? 'analyze' : 'analyze');
   const navigate = useNavigate();
 
   const tabs = [
+    { id: 'analyze', label: '自訂選品分析', icon: <Search size={16} /> },
     { id: 'social', label: '社群話題選品', icon: <TrendingUp size={16} /> },
     { id: 'crowdfunding', label: '募資趨勢選品', icon: <Compass size={16} /> },
     { id: 'disadvantage', label: '產品劣勢選品', icon: <AlertTriangle size={16} /> },
@@ -17,6 +20,10 @@ export default function DiscoveryPage() {
   ];
 
   useEffect(() => {
+    if (activeTab === 'analyze') {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     fetch(`http://127.0.0.1:8000/api/v1/discovery?category=${activeTab}`)
       .then(res => res.json())
@@ -27,6 +34,7 @@ export default function DiscoveryPage() {
   }, [activeTab]);
 
   const handleAnalyze = (productName) => {
+    setActiveTab('analyze');
     navigate('/', { state: { autoFill: productName } });
   };
 
@@ -35,9 +43,9 @@ export default function DiscoveryPage() {
       <div className="glass-panel" style={{ padding: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, color: 'var(--text-main)' }}>
-            <Compass color="var(--primary-color)" /> 五大選品靈感庫
+            <Compass color="var(--primary-color)" /> 選品分析大廳
           </h2>
-          {data.is_real_data && (
+          {activeTab !== 'analyze' && data.is_real_data && (
             <span style={{ 
               fontSize: '0.75rem', 
               padding: '0.25rem 0.75rem', 
@@ -78,8 +86,10 @@ export default function DiscoveryPage() {
           ))}
         </div>
 
-        {/* Table */}
-        {isLoading ? (
+        {/* Content Area */}
+        {activeTab === 'analyze' ? (
+          <InputPage />
+        ) : isLoading ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>資料載入中...</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>

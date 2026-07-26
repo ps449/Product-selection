@@ -13,8 +13,7 @@ function App() {
       <header className="app-header">
         <Link to="/" className="logo-text">Shopee AutoSelect</Link>
         <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <Link to="/" style={{ color: location.pathname === '/' ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: '500' }}>選品分析</Link>
-          <Link to="/discovery" style={{ color: location.pathname === '/discovery' ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: '500' }}>五大選品靈感</Link>
+          <Link to="/" style={{ color: location.pathname === '/' ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: '500' }}>選品大廳</Link>
           <Link to="/admin">
             <button className="btn-primary" style={{ background: location.pathname === '/admin' ? 'var(--primary-color)' : 'var(--text-muted)' }}>主管後台</button>
           </Link>
@@ -23,10 +22,9 @@ function App() {
 
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<InputPage />} />
+          <Route path="/" element={<DiscoveryPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/discovery" element={<DiscoveryPage />} />
         </Routes>
       </main>
     </div>

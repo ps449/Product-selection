@@ -47,9 +47,9 @@ export default function InputPage() {
   };
 
   return (
-    <div className="page-container">
-      <section className="hero-section glass-panel">
-        <h1 className="hero-title">商品選品自動化分析</h1>
+    <div style={{ padding: '1rem 0' }}>
+      <section style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-main)' }}>自訂商品選品分析</h2>
         <p className="hero-subtitle">
           輸入商品名稱，系統將自動比對蝦皮搜尋量、競品銷量與 Google 趨勢。
         </p>
