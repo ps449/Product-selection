@@ -5,6 +5,8 @@ import json
 import statistics
 import threading
 import os
+import platform
+import glob
 
 # Fix Playwright browser path for PyInstaller
 os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "0"
@@ -13,6 +15,32 @@ try:
     from playwright.sync_api import sync_playwright
 except ImportError:
     pass
+
+def get_playwright_executable():
+    system = platform.system()
+    if system == "Darwin":
+        cache_dir = os.path.expanduser("~/Library/Caches/ms-playwright")
+        if not os.path.exists(cache_dir): return None
+        chromiums = glob.glob(os.path.join(cache_dir, "chromium-*"))
+        if not chromiums: return None
+        chromiums.sort(reverse=True)
+        base = chromiums[0]
+        arm_path = os.path.join(base, "chrome-mac-arm64", "Google Chrome for Testing.app", "Contents", "MacOS", "Google Chrome for Testing")
+        if os.path.exists(arm_path): return arm_path
+        x64_path = os.path.join(base, "chrome-mac", "Chromium.app", "Contents", "MacOS", "Chromium")
+        if os.path.exists(x64_path): return x64_path
+    elif system == "Windows":
+        cache_dir = os.path.expanduser("~\\AppData\\Local\\ms-playwright")
+        if not os.path.exists(cache_dir): return None
+        chromiums = glob.glob(os.path.join(cache_dir, "chromium-*"))
+        if not chromiums: return None
+        chromiums.sort(reverse=True)
+        base = chromiums[0]
+        win_path = os.path.join(base, "chrome-win", "chrome.exe")
+        if os.path.exists(win_path): return win_path
+        win64_path = os.path.join(base, "chrome-win64", "chrome.exe")
+        if os.path.exists(win64_path): return win64_path
+    return None
 
 class ShopeeScraper:
     def __init__(self):
@@ -37,6 +65,7 @@ class ShopeeScraper:
                 
                 context = p.chromium.launch_persistent_context(
                     user_data_dir=user_data_dir,
+                    executable_path=get_playwright_executable(),
                     headless=False,
                     args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
