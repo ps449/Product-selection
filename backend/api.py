@@ -141,6 +141,13 @@ def get_discovery(category: str = 'social'):
                 {"rank": 1, "product_name": "多功能折疊推車", "col3": "嘖嘖 Zeczec", "col4": "1250%", "col5": "3,200人"},
                 {"rank": 2, "product_name": "人體工學午睡枕", "col3": "FlyingV", "col4": "800%", "col5": "1,500人"},
                 {"rank": 3, "product_name": "模組化收納背包", "col3": "嘖嘖 Zeczec", "col4": "640%", "col5": "980人"},
+                {"rank": 4, "product_name": "快充行動電源", "col3": "嘖嘖 Zeczec", "col4": "550%", "col5": "850人"},
+                {"rank": 5, "product_name": "智能保溫杯", "col3": "FlyingV", "col4": "420%", "col5": "760人"},
+                {"rank": 6, "product_name": "人體工學辦公椅", "col3": "嘖嘖 Zeczec", "col4": "380%", "col5": "620人"},
+                {"rank": 7, "product_name": "便攜式沖牙機", "col3": "嘖嘖 Zeczec", "col4": "310%", "col5": "540人"},
+                {"rank": 8, "product_name": "環保餐具組", "col3": "FlyingV", "col4": "290%", "col5": "480人"},
+                {"rank": 9, "product_name": "降噪藍牙耳機", "col3": "嘖嘖 Zeczec", "col4": "250%", "col5": "410人"},
+                {"rank": 10, "product_name": "多功能料理鍋", "col3": "嘖嘖 Zeczec", "col4": "210%", "col5": "350人"},
             ]
         }
     elif category == 'disadvantage':
@@ -172,6 +179,11 @@ def get_discovery(category: str = 'social'):
                 {"rank": 3, "product_name": "雨鞋", "col3": "106,312", "col4": "296,082", "col5": "+189,770"},
                 {"rank": 4, "product_name": "拖鞋", "col3": "430,474", "col4": "603,501", "col5": "+173,027"},
                 {"rank": 5, "product_name": "洞洞鞋", "col3": "200,343", "col4": "362,710", "col5": "+162,367"},
+                {"rank": 6, "product_name": "防水噴霧", "col3": "85,200", "col4": "210,500", "col5": "+125,300"},
+                {"rank": 7, "product_name": "除濕機", "col3": "310,400", "col4": "420,800", "col5": "+110,400"},
+                {"rank": 8, "product_name": "安全帽鏡片", "col3": "55,300", "col4": "145,200", "col5": "+89,900"},
+                {"rank": 9, "product_name": "防曬乳", "col3": "620,100", "col4": "705,000", "col5": "+84,900"},
+                {"rank": 10, "product_name": "太陽眼鏡", "col3": "150,200", "col4": "210,100", "col5": "+59,900"},
             ]
         }
 
