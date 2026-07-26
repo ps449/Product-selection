@@ -51,7 +51,7 @@ export default function InputPage() {
       <section style={{ textAlign: 'center' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-main)' }}>自訂商品選品分析</h2>
         <p className="hero-subtitle">
-          輸入商品名稱，系統將自動比對蝦皮搜尋量、競品銷量與 Google 趨勢。
+          輸入商品名稱，系統將自動比對 PChome》momo 熱銷商品和價格與 Google 趨勢。
         </p>
         
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', maxWidth: '600px', margin: '0 auto' }}>
@@ -108,7 +108,7 @@ export default function InputPage() {
                 </div>
                 
                 <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>對應蝦皮類目 (第二層)</label>
+                  <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>對應類目 (將同時查詢 PChome + momo)</label>
                   <input type="text" defaultValue={aiResult.shopee_category} style={{ width: '100%', padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)' }} />
                 </div>
 

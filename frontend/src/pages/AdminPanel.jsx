@@ -84,7 +84,7 @@ export default function AdminPanel() {
 
   const fields = [
     { key: 'google_trend', label: 'Google 趨勢權重' },
-    { key: 'shopee_search', label: '蝦皮搜尋權重' },
+    { key: 'shopee_search', label: '電商搜尋權重 (PChome+momo)' },
     { key: 'sales', label: '銷量競爭權重' },
     { key: 'competition', label: '價格競爭權重' },
     { key: 'social', label: '社群話題權重' },

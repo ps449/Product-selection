@@ -61,7 +61,7 @@ export default function Dashboard() {
   
   const chartData = [
     { subject: 'Google 趨勢', A: evaluation.details.google_trend, fullMark: 100 },
-    { subject: '蝦皮搜尋', A: evaluation.details.shopee_search, fullMark: 100 },
+    { subject: '電商搜尋', A: evaluation.details.shopee_search, fullMark: 100 },
     { subject: '銷量競爭', A: evaluation.details.sales, fullMark: 100 },
     { subject: '價格競爭', A: evaluation.details.competition, fullMark: 100 },
     { subject: '社群話題', A: evaluation.details.social, fullMark: 100 },
@@ -140,7 +140,7 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </div>
               <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(255,255,255,0.5)', borderRadius: '0.5rem' }}>
-                * 註：蝦皮搜尋、熱銷程度與競價空間，目前皆
+                * 註：PChome、momo搜尋權重、熱銷程度與競價空間，目前皆
                 {is_real_data ? (
                   <strong style={{ color: 'var(--primary-color)' }}>基於真實市場定價與銷量即時運算</strong>
                 ) : (
@@ -181,7 +181,7 @@ export default function Dashboard() {
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                 <BarChart2 size={20} color="var(--primary-color)" /> 1. 搜索分析
               </h3>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>透過蝦皮搜索量變化，判斷市場需求大小及變化。</p>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>透過 PChome》momo 搜尋量變化，判斷市場需求大小及變化。</p>
               <div style={{ width: '100%', height: 300 }}>
                 <ResponsiveContainer>
                   <BarChart data={result.three_analyses.search_data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -228,7 +228,15 @@ export default function Dashboard() {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
                           <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: '600' }}>月銷 {item.sales} 件</span>
-                          <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', padding: '0.25rem 0.75rem', background: 'var(--primary-color)', color: 'white', borderRadius: '0.25rem', textDecoration: 'none' }}>前往蝦皮</a>
+                          {item.link ? (
+                            <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', padding: '0.25rem 0.75rem', background:
+                              item.link.includes('pchome') ? '#e85d04' :
+                              item.link.includes('momoshop') ? '#c0392b' :
+                              '#ee4d2d',
+                              color: 'white', borderRadius: '0.25rem', textDecoration: 'none' }}>
+                              {item.link.includes('pchome') ? '前往 PChome' : item.link.includes('momoshop') ? '前往 momo' : '前往商品'}
+                            </a>
+                          ) : null}
                         </div>
                       </div>
                     ))}
@@ -269,7 +277,15 @@ export default function Dashboard() {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
                           <span style={{ fontSize: '0.85rem', color: '#ef4444', fontWeight: '600' }}>NT$ {item.price}</span>
-                          <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', padding: '0.25rem 0.75rem', background: 'var(--primary-color)', color: 'white', borderRadius: '0.25rem', textDecoration: 'none' }}>前往蝦皮</a>
+                          {item.link ? (
+                            <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', padding: '0.25rem 0.75rem', background:
+                              item.link.includes('pchome') ? '#e85d04' :
+                              item.link.includes('momoshop') ? '#c0392b' :
+                              '#ee4d2d',
+                              color: 'white', borderRadius: '0.25rem', textDecoration: 'none' }}>
+                              {item.link.includes('pchome') ? '前往 PChome' : item.link.includes('momoshop') ? '前往 momo' : '前往商品'}
+                            </a>
+                          ) : null}
                         </div>
                       </div>
                     ))}
