@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Save, Settings } from 'lucide-react';
+import { Save, Settings, Clock } from 'lucide-react';
 
 export default function AdminPanel() {
   const [weights, setWeights] = useState(null);
+  const [crawlerStatus, setCrawlerStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -17,6 +18,9 @@ export default function AdminPanel() {
           displayWeights[k] = Math.round(v * 100);
         }
         setWeights(displayWeights);
+        if (data.crawler_status) {
+          setCrawlerStatus(data.crawler_status);
+        }
         setIsLoading(false);
       })
       .catch(err => {
@@ -111,6 +115,28 @@ export default function AdminPanel() {
           </div>
         )}
       </div>
+
+      {crawlerStatus && (
+        <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+            <Clock /> 系統排程狀態
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+            <div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>前次爬蟲執行時間</div>
+              <div style={{ fontWeight: '600', color: 'var(--text-main)', marginTop: '0.25rem' }}>
+                {crawlerStatus.last_crawl_time !== "尚未執行" ? new Date(crawlerStatus.last_crawl_time).toLocaleString() : crawlerStatus.last_crawl_time}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>下次預定執行時間 (觸發制)</div>
+              <div style={{ fontWeight: '600', color: 'var(--primary-color)', marginTop: '0.25rem' }}>
+                {new Date(crawlerStatus.next_crawl_time).toLocaleString()} 之後
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

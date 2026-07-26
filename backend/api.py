@@ -120,7 +120,11 @@ def evaluate_target(req: EvaluateRequest):
 
 @router.get("/settings")
 def get_settings():
-    return admin_settings
+    return {
+        "status": "success", 
+        "weights": admin_settings["weights"],
+        "crawler_status": trends_service.get_crawler_status()
+    }
 
 @router.post("/settings")
 def update_settings(new_weights: dict):

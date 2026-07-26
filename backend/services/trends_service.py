@@ -1,7 +1,7 @@
 import time
 import json
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytrends.request import TrendReq
 
 class TrendsService:
@@ -48,6 +48,23 @@ class TrendsService:
         ''', (today, json.dumps(data, ensure_ascii=False), now_str))
         conn.commit()
         conn.close()
+        
+    def get_crawler_status(self):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute('SELECT created_at FROM daily_trends ORDER BY date DESC LIMIT 1')
+        latest_row = c.fetchone()
+        conn.close()
+        
+        last_run = latest_row[0] if latest_row else "尚未執行"
+        
+        # 由於我們是被動觸發機制，下一次爬蟲時間必定是「明天的凌晨 00:00」之後的第一個請求
+        tomorrow = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+        
+        return {
+            "last_crawl_time": last_run,
+            "next_crawl_time": tomorrow.isoformat()
+        }
         
     def get_trend_score(self, keyword: str) -> dict:
         """
