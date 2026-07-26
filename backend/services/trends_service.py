@@ -28,11 +28,13 @@ class TrendsService:
         today = datetime.now().strftime('%Y-%m-%d')
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
-        c.execute('SELECT raw_data_json FROM daily_trends WHERE date = ?', (today,))
+        c.execute('SELECT raw_data_json, created_at FROM daily_trends WHERE date = ?', (today,))
         row = c.fetchone()
         conn.close()
         if row:
-            return json.loads(row[0])
+            data = json.loads(row[0])
+            data["updated_at"] = row[1]
+            return data
         return None
         
     def _save_today_data(self, data):
@@ -172,7 +174,10 @@ class TrendsService:
 
         result = {
             "columns": ["排名", "關鍵字", "前期搜尋熱度", "近期搜尋熱度", "提升量", "分類標籤"],
-            "items": formatted_items
+            "items": formatted_items,
+            "is_real_data": api_alive,
+            "data_source": "Google Trends (台灣區)",
+            "updated_at": datetime.now().isoformat()
         }
         
         # 2. 將新資料寫入資料庫

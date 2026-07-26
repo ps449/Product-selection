@@ -32,6 +32,8 @@ class EvaluateResponse(BaseModel):
     evaluation: dict
     three_analyses: dict
     is_real_data: bool = False
+    data_source: str = "Shopee TW & Google Trends"
+    updated_at: str = ""
 
 class EvaluateRequest(BaseModel):
     keyword: str
@@ -110,7 +112,9 @@ def evaluate_target(req: EvaluateRequest):
     return {
         "evaluation": score_result,
         "three_analyses": three_analyses,
-        "is_real_data": is_real
+        "is_real_data": is_real,
+        "data_source": "Shopee Search & Google Trends (TW)",
+        "updated_at": datetime.now().isoformat()
     }
 
 @router.get("/settings")

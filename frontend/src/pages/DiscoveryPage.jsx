@@ -33,9 +33,27 @@ export default function DiscoveryPage() {
   return (
     <div className="page-container" style={{ maxWidth: '1000px' }}>
       <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', color: 'var(--text-main)' }}>
-          <Compass color="var(--primary-color)" /> 五大選品靈感庫
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, color: 'var(--text-main)' }}>
+            <Compass color="var(--primary-color)" /> 五大選品靈感庫
+          </h2>
+          {data.is_real_data && (
+            <span style={{ 
+              fontSize: '0.75rem', 
+              padding: '0.25rem 0.75rem', 
+              borderRadius: '1rem', 
+              background: '#dcfce7', 
+              color: '#16a34a',
+              fontWeight: 'bold',
+              border: '1px solid #bbf7d0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem'
+            }}>
+              已連線真實數據 ({data.data_source} - 更新時間: {new Date(data.updated_at).toLocaleString()})
+            </span>
+          )}
+        </div>
         <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
           選品的本質在於洞察「消費者需求」及「需求變動」。在此探索不同切入點的高潛力商品。
         </p>
