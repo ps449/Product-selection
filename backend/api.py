@@ -77,6 +77,9 @@ def analyze_input(req: AnalyzeRequest):
 def evaluate_target(req: EvaluateRequest):
     # 1. Fetch Shopee Data
     market_data = scraper.get_market_data(req.keyword, req.category_id)
+    if not market_data.get("success"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail=market_data.get("error", "獲取真實商品數據失敗，請確認網路狀態或稍後再試。"))
     
     # 2. Fetch Google Trends Data
     trend_data = trends_service.get_trend_score(req.keyword)

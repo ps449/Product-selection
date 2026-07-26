@@ -174,32 +174,7 @@ class ShopeeScraper:
                         "raw_items": raw_items
                     }
         except Exception as e:
-            print(f"[ShopeeScraper Warning] Playwright fetch failed ({e}). Falling back to mock data.")
-            pass # Fall through to mock logic
-
-        # Fallback Mock logic (Make it deterministic based on keyword hash)
-        time.sleep(1.5)
-        seed = sum(ord(c) for c in keyword)
-        random.seed(seed)
-        market_median_price = random.randint(300, 1500)
-        sales_volume = random.randint(50, 2000)
-        
-        fallback_data = {
-            "success": True,
-            "keyword": keyword,
-            "category_id": category_id,
-            "market_median_price": market_median_price,
-            "estimated_sales_volume_monthly": sales_volume,
-            "shopee_search_percentile_score": random.randint(40, 90),
-            "competition_percentile_score": random.randint(30, 85),
-            "sales_percentile_score": random.randint(50, 95),
-            "is_real_data": False,
-            "raw_prices": [market_median_price * 0.8, market_median_price, market_median_price * 1.2],
-            "total_sales": sales_volume * 12,
-            "raw_items": [
-                {"name": f"{keyword} 模擬商品 1", "price": market_median_price, "sales": sales_volume, "link": "https://shopee.tw/"},
-                {"name": f"{keyword} 模擬商品 2", "price": market_median_price * 0.8, "sales": sales_volume * 2, "link": "https://shopee.tw/"}
-            ]
-        }
-        random.seed() # reset seed
-        return fallback_data
+            print(f"[ShopeeScraper Warning] Playwright fetch failed ({e}).")
+            return {"success": False, "error": f"蝦皮真實數據連線失敗 ({str(e)})。已關閉模擬數據功能，請稍後重試。"}
+            
+        return {"success": False, "error": "無法取得蝦皮商品列表（可能遇到防爬蟲）。已關閉模擬數據功能，請稍後重試或重新啟動。"}
