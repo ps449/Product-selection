@@ -75,6 +75,26 @@ class ShopeeScraper:
                 # launch_persistent_context already creates a default page, so use it
                 page = context.pages[0] if context.pages else context.new_page()
                 
+                # Attempt to inject cookies from the user's main browser
+                try:
+                    import browser_cookie3
+                    print("[ShopeeScraper] Attempting to load system cookies...")
+                    cj = browser_cookie3.load(domain_name='shopee.tw')
+                    cookies = []
+                    for c in cj:
+                        cookies.append({
+                            "name": c.name,
+                            "value": c.value,
+                            "domain": c.domain,
+                            "path": c.path,
+                            "secure": bool(c.secure),
+                        })
+                    if cookies:
+                        print(f"[ShopeeScraper] Injected {len(cookies)} cookies from system!")
+                        context.add_cookies(cookies)
+                except Exception as e:
+                    print(f"[ShopeeScraper] Failed to load system cookies: {e}")
+                
                 encoded_keyword = urllib.parse.quote(keyword)
                 url = f"https://shopee.tw/search?keyword={encoded_keyword}"
                 

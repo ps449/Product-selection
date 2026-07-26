@@ -4,4 +4,5 @@ pydantic
 python-dotenv
 requests
 pytrends
-playwright
+playwright==1.42.0
+browser-cookie3==0.20.1
