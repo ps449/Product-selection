@@ -2,12 +2,54 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from api import router as api_router
+from api import router as api_router, admin_settings, trends_service
+from services.email_service import EmailService
 import os
+import asyncio
+from datetime import datetime
 
 app = FastAPI(title="Shopee Product Selection API")
+email_service = EmailService()
 
-# Configure CORS
+# Define the background scheduler task
+async def scheduler_task():
+    print("[Scheduler] Background automation task started.")
+    last_run_date = None
+    while True:
+        try:
+            auto_config = admin_settings.get("automation", {})
+            if auto_config.get("enable_scheduler"):
+                schedule_time_str = auto_config.get("schedule_time", "08:00")
+                now = datetime.now()
+                current_time_str = now.strftime("%H:%M")
+                current_date_str = now.strftime("%Y-%m-%d")
+                
+                # Check if it's the right time and we haven't run today
+                if current_time_str == schedule_time_str and last_run_date != current_date_str:
+                    print(f"[Scheduler] Triggering daily crawler at {current_time_str}")
+                    
+                    # 1. Run crawler
+                    trends_data = trends_service.get_trending_shopping_keywords()
+                    
+                    # 2. Send Email if enabled
+                    if auto_config.get("enable_email"):
+                        email_service.send_daily_report(
+                            smtp_email=auto_config.get("smtp_email"),
+                            smtp_password=auto_config.get("smtp_password"),
+                            target_emails=auto_config.get("target_emails"),
+                            trends_data=trends_data
+                        )
+                    
+                    # Mark as run for today
+                    last_run_date = current_date_str
+        except Exception as e:
+            print(f"[Scheduler] Error in loop: {e}")
+            
+        await asyncio.sleep(60) # check every minute
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(scheduler_task())
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Update this in production

@@ -3,6 +3,14 @@ import { Save, Settings, Clock } from 'lucide-react';
 
 export default function AdminPanel() {
   const [weights, setWeights] = useState(null);
+  const [automation, setAutomation] = useState({
+    enable_scheduler: false,
+    schedule_time: '08:00',
+    enable_email: false,
+    smtp_email: '',
+    smtp_password: '',
+    target_emails: ''
+  });
   const [crawlerStatus, setCrawlerStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -18,6 +26,9 @@ export default function AdminPanel() {
           displayWeights[k] = Math.round(v * 100);
         }
         setWeights(displayWeights);
+        if (data.automation) {
+          setAutomation(data.automation);
+        }
         if (data.crawler_status) {
           setCrawlerStatus(data.crawler_status);
         }
@@ -41,9 +52,12 @@ export default function AdminPanel() {
     setMessage('');
     
     // convert back to decimal
-    const payload = {};
+    const payload = {
+      weights: {},
+      automation: automation
+    };
     for (const [k, v] of Object.entries(weights)) {
-      payload[k] = v / 100;
+      payload.weights[k] = v / 100;
     }
 
     try {
@@ -114,6 +128,80 @@ export default function AdminPanel() {
             {message}
           </div>
         )}
+      </div>
+
+      <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
+          <Clock /> 自動化排程與發信設定
+        </h2>
+        
+        <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: '1fr 1fr' }}>
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              <input type="checkbox" checked={automation.enable_scheduler} onChange={e => setAutomation({...automation, enable_scheduler: e.target.checked})} />
+              啟用每日自動爬蟲
+            </label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>開啟後系統會在背景定時幫您收錄最新市場資訊。</p>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.95rem' }}>自動執行時間 (24小時制)</label>
+            <input 
+              type="time" 
+              value={automation.schedule_time} 
+              onChange={e => setAutomation({...automation, schedule_time: e.target.value})}
+              disabled={!automation.enable_scheduler}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', opacity: automation.enable_scheduler ? 1 : 0.5 }}
+            />
+          </div>
+        </div>
+
+        <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '2rem 0' }} />
+
+        <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: '1fr' }}>
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>
+              <input type="checkbox" checked={automation.enable_email} onChange={e => setAutomation({...automation, enable_email: e.target.checked})} disabled={!automation.enable_scheduler} />
+              啟用自動發信通知 (需搭配自動爬蟲開啟)
+            </label>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>爬蟲完成後，將會自動寄送一封包含焦點關鍵字的精美郵件給團隊。</p>
+          </div>
+          
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: '1fr 1fr', opacity: automation.enable_email ? 1 : 0.5 }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.95rem' }}>發信專用 Gmail 信箱</label>
+              <input 
+                type="email" 
+                placeholder="example@gmail.com"
+                value={automation.smtp_email} 
+                onChange={e => setAutomation({...automation, smtp_email: e.target.value})}
+                disabled={!automation.enable_email}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.95rem' }}>Gmail 應用程式密碼</label>
+              <input 
+                type="password" 
+                placeholder="16碼應用程式密碼"
+                value={automation.smtp_password} 
+                onChange={e => setAutomation({...automation, smtp_password: e.target.value})}
+                disabled={!automation.enable_email}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+              />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.95rem' }}>收件者信箱 (多筆請用逗號分隔)</label>
+              <input 
+                type="text" 
+                placeholder="boss@company.com, team@company.com"
+                value={automation.target_emails} 
+                onChange={e => setAutomation({...automation, target_emails: e.target.value})}
+                disabled={!automation.enable_email}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {crawlerStatus && (

@@ -48,11 +48,19 @@ class EvaluateRequest(BaseModel):
 admin_settings = {
     "weights": {
         "google_trend": 0.25,
-        "shopee_search": 0.25,
-        "sales": 0.15,
+        "shopee_search": 0.15,
+        "sales": 0.20,
         "competition": 0.10,
-        "social": 0.10,
+        "social": 0.15,
         "scene": 0.15
+    },
+    "automation": {
+        "enable_scheduler": False,
+        "schedule_time": "08:00",
+        "enable_email": False,
+        "smtp_email": "",
+        "smtp_password": "",
+        "target_emails": ""
     }
 }
 
@@ -123,12 +131,16 @@ def get_settings():
     return {
         "status": "success", 
         "weights": admin_settings["weights"],
+        "automation": admin_settings["automation"],
         "crawler_status": trends_service.get_crawler_status()
     }
 
 @router.post("/settings")
-def update_settings(new_weights: dict):
-    admin_settings["weights"] = new_weights
+def update_settings(new_settings: dict):
+    if "weights" in new_settings:
+        admin_settings["weights"] = new_settings["weights"]
+    if "automation" in new_settings:
+        admin_settings["automation"] = new_settings["automation"]
     return {"status": "success", "settings": admin_settings}
 
 @router.get("/discovery")
