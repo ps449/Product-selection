@@ -100,6 +100,10 @@ def evaluate_target(req: EvaluateRequest):
     
     total_sales = market_data.get("total_sales", 1000)
     prices = market_data.get("raw_prices", [market_data["market_median_price"]])
+    raw_items = market_data.get("raw_items", [])
+    
+    top_sales_items = sorted(raw_items, key=lambda x: x.get("sales", 0), reverse=True)[:5]
+    top_cheap_items = sorted([item for item in raw_items if item.get("price", 0) > 0], key=lambda x: x.get("price", 0))[:5]
     
     pricing_data = []
     if prices:
@@ -120,7 +124,9 @@ def evaluate_target(req: EvaluateRequest):
             {"name": "市場均月銷量", "value": market_data["estimated_sales_volume_monthly"]},
             {"name": "Top 1 競品月銷量", "value": int(market_data["estimated_sales_volume_monthly"] * 2.5)}
         ],
-        "pricing_data": pricing_data if pricing_data else [{"price": market_data["market_median_price"], "sales": total_sales}]
+        "pricing_data": pricing_data if pricing_data else [{"price": market_data["market_median_price"], "sales": total_sales}],
+        "top_sales_items": top_sales_items,
+        "top_cheap_items": top_cheap_items
     }
     
     # 5. Check if data is real

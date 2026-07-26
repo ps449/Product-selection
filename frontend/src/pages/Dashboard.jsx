@@ -214,6 +214,27 @@ export default function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              
+              {/* TOP 5 熱銷列表 */}
+              {result.three_analyses.top_sales_items && result.three_analyses.top_sales_items.length > 0 && (
+                <div style={{ marginTop: '1.5rem' }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: '600', marginBottom: '0.5rem', color: 'var(--text-color)' }}>🔥 熱銷商品 Top 5</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {result.three_analyses.top_sales_items.map((item, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+                          <span style={{ fontWeight: 'bold', color: '#64748b', minWidth: '1.5rem' }}>#{idx + 1}</span>
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '400px', fontSize: '0.9rem' }} title={item.name}>{item.name}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+                          <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: '600' }}>月銷 {item.sales} 件</span>
+                          <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', padding: '0.25rem 0.75rem', background: 'var(--primary-color)', color: 'white', borderRadius: '0.25rem', textDecoration: 'none' }}>前往蝦皮</a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 3. 競價分析 */}
@@ -234,6 +255,27 @@ export default function Dashboard() {
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
+              
+              {/* TOP 5 競價列表 (最低價) */}
+              {result.three_analyses.top_cheap_items && result.three_analyses.top_cheap_items.length > 0 && (
+                <div style={{ marginTop: '1.5rem' }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: '600', marginBottom: '0.5rem', color: 'var(--text-color)' }}>💰 最具價格競爭力 (低價) Top 5</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {result.three_analyses.top_cheap_items.map((item, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+                          <span style={{ fontWeight: 'bold', color: '#64748b', minWidth: '1.5rem' }}>#{idx + 1}</span>
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '400px', fontSize: '0.9rem' }} title={item.name}>{item.name}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+                          <span style={{ fontSize: '0.85rem', color: '#ef4444', fontWeight: '600' }}>NT$ {item.price}</span>
+                          <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', padding: '0.25rem 0.75rem', background: 'var(--primary-color)', color: 'white', borderRadius: '0.25rem', textDecoration: 'none' }}>前往蝦皮</a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}

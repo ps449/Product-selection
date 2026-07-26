@@ -37,17 +37,28 @@ class ShopeeScraper:
                     
                     if items:
                         prices = []
+                        raw_items = []
                         total_sales = 0
                         for item in items:
                             item_basic = item.get("item_basic", {})
-                            # Shopee price is multiplied by 100000
                             price = item_basic.get("price", 0) / 100000
                             if price > 0:
                                 prices.append(price)
-                            
-                            # historical_sold is total sold, somewhat correlating to sales
+                                
                             sales = item_basic.get("historical_sold", 0)
                             total_sales += sales
+                            
+                            itemid = item_basic.get("itemid")
+                            shopid = item_basic.get("shopid")
+                            name = item_basic.get("name", "")
+                            
+                            if itemid and shopid:
+                                raw_items.append({
+                                    "name": name,
+                                    "price": price,
+                                    "sales": sales,
+                                    "link": f"https://shopee.tw/product/{shopid}/{itemid}"
+                                })
                             
                         market_median_price = statistics.median(prices) if prices else 0
                         
@@ -80,7 +91,8 @@ class ShopeeScraper:
                             "sales_percentile_score": max(50, sales_score),
                             "is_real_data": True,
                             "raw_prices": prices,
-                            "total_sales": total_sales
+                            "total_sales": total_sales,
+                            "raw_items": raw_items
                         }
         except Exception as e:
             print(f"[ShopeeScraper Warning] Real fetch failed ({e}). Falling back to mock data.")
@@ -104,7 +116,11 @@ class ShopeeScraper:
             "sales_percentile_score": random.randint(50, 95),
             "is_real_data": False,
             "raw_prices": [market_median_price * 0.8, market_median_price, market_median_price * 1.2],
-            "total_sales": sales_volume * 12
+            "total_sales": sales_volume * 12,
+            "raw_items": [
+                {"name": f"{keyword} 模擬商品 1", "price": market_median_price, "sales": sales_volume, "link": "https://shopee.tw/"},
+                {"name": f"{keyword} 模擬商品 2", "price": market_median_price * 0.8, "sales": sales_volume * 2, "link": "https://shopee.tw/"}
+            ]
         }
         random.seed() # reset seed
         return fallback_data
