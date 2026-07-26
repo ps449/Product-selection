@@ -32,13 +32,19 @@ class ShopeeScraper:
         try:
             print(f"[ShopeeScraper] Launching Playwright to fetch {keyword}...")
             with sync_playwright() as p:
-                # Use headless=False so user can solve captcha if Shopee blocks
-                browser = p.chromium.launch(headless=False, args=["--no-sandbox", "--disable-blink-features=AutomationControlled"])
-                context = browser.new_context(
+                # Use a persistent context so cookies and logins are saved (Not Incognito)
+                user_data_dir = os.path.join(os.path.expanduser("~"), ".ShopeeAutoSelect_Profile")
+                
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=user_data_dir,
+                    headless=False,
+                    args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                     viewport={"width": 1280, "height": 800}
                 )
-                page = context.new_page()
+                
+                # launch_persistent_context already creates a default page, so use it
+                page = context.pages[0] if context.pages else context.new_page()
                 
                 encoded_keyword = urllib.parse.quote(keyword)
                 url = f"https://shopee.tw/search?keyword={encoded_keyword}"
@@ -125,7 +131,7 @@ class ShopeeScraper:
                     }''')
                     items = dom_items
                 
-                browser.close()
+                context.close()
 
                 if items:
                     prices = []
