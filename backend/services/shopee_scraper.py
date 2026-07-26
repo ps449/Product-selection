@@ -21,11 +21,16 @@ class ShopeeScraper:
         Falls back to mock data if blocked by Anti-Bot.
         """
         try:
+            import ssl
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            
             encoded_keyword = urllib.parse.quote(keyword)
             url = f"{self.base_url}?keyword={encoded_keyword}&limit=50&offset=0&page_type=search"
             
             req = urllib.request.Request(url, headers=self.headers)
-            with urllib.request.urlopen(req, timeout=5) as response:
+            with urllib.request.urlopen(req, timeout=5, context=ctx) as response:
                 if response.status == 200:
                     data = json.loads(response.read().decode('utf-8'))
                     items = data.get("items", [])

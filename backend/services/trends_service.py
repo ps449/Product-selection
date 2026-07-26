@@ -71,7 +71,7 @@ class TrendsService:
         Fetches real Google Trends data for a given keyword over the last 3 months.
         """
         try:
-            pytrends = TrendReq(hl='zh-TW', tz=-480)
+            pytrends = TrendReq(hl='zh-TW', tz=-480, requests_args={'verify': False})
             pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='TW')
             df = pytrends.interest_over_time()
             
@@ -104,19 +104,22 @@ class TrendsService:
             return {
                 "success": True,
                 "keyword": keyword,
-                "growth_rate_pct": round(growth_rate, 2),
-                "percentile_score": round(percentile_score, 1),
+                "growth_rate_pct": float(round(growth_rate, 2)),
+                "percentile_score": float(round(percentile_score, 1)),
                 "source": "Google Trends (TW)",
                 "is_real_data": True
             }
         except Exception as e:
+            with open("error.log", "a") as f:
+                f.write(f"Google Trends Error: {str(e)}\\n")
+            print(f"[TrendsService] Error fetching Google Trends data: {e}")
             # 發生錯誤時退回備用數據
             return {
                 "success": True,
                 "keyword": keyword,
                 "growth_rate_pct": 15.5,
                 "percentile_score": 75.0,
-                "source": "Google Trends (Fallback)",
+                "source": f"Google Trends (Fallback) - Error: {str(e)}",
                 "is_real_data": False
             }
 

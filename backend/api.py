@@ -114,7 +114,7 @@ def evaluate_target(req: EvaluateRequest):
         "evaluation": score_result,
         "three_analyses": three_analyses,
         "is_real_data": is_real,
-        "data_source": "Shopee Search & Google Trends (TW)",
+        "data_source": f"Shopee({market_data.get('is_real_data')}) & Trends({trend_data.get('source')})",
         "updated_at": datetime.now().isoformat()
     }
 
