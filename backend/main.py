@@ -49,6 +49,14 @@ async def scheduler_task():
 
 @app.on_event("startup")
 async def startup_event():
+    # Automatically install Playwright browser for the desktop app user
+    print("[System] Checking and installing Playwright browser... this might take a minute on first run.")
+    import subprocess
+    try:
+        subprocess.run(["playwright", "install", "chromium"], check=True)
+    except Exception as e:
+        print(f"[System] Failed to install playwright browser: {e}")
+        
     asyncio.create_task(scheduler_task())
 app.add_middleware(
     CORSMiddleware,
