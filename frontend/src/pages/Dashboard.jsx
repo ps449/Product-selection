@@ -55,23 +55,7 @@ export default function Dashboard() {
 
   const { evaluation, is_real_data } = result;
   
-  if (!is_real_data) {
-    return (
-      <div className="page-container">
-        <button onClick={() => navigate('/')} style={{ background: 'transparent', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', marginBottom: '2rem' }}>
-          <ArrowLeft size={18} /> 返回重新辨識
-        </button>
-        <div className="glass-panel" style={{ padding: '4rem 2rem', textAlign: 'center' }}>
-          <AlertCircle size={48} color="var(--danger-color)" style={{ margin: '0 auto 1rem auto' }} />
-          <h2 style={{ color: 'var(--danger-color)', marginBottom: '1rem' }}>無法取得真實數據</h2>
-          <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>
-            系統目前可能遇到網路延遲，或遭到平台安全機制 (Anti-Bot) 阻擋，無法即時抓取真實的市場數據。<br />
-            為確保選品決策的準確性，此頁面<strong>僅允許顯示真實數據</strong>。請稍後再重新嘗試分析。
-          </p>
-        </div>
-      </div>
-    );
-  }
+
 
   const isRejected = evaluation.position.includes('不建議');
   
@@ -116,7 +100,7 @@ export default function Dashboard() {
         <div className="glass-panel" style={{ padding: '2rem', minHeight: '400px' }}>
           <h3 style={{ marginBottom: '1rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             各項指標分析雷達圖
-            {is_real_data && (
+            {is_real_data ? (
               <span style={{ 
                 fontSize: '0.75rem', 
                 padding: '0.2rem 0.5rem', 
@@ -127,6 +111,18 @@ export default function Dashboard() {
                 border: '1px solid #bbf7d0'
               }}>
                 已連線真實數據
+              </span>
+            ) : (
+              <span style={{ 
+                fontSize: '0.75rem', 
+                padding: '0.2rem 0.5rem', 
+                borderRadius: '1rem', 
+                background: '#fee2e2', 
+                color: '#dc2626',
+                fontWeight: 'bold',
+                border: '1px solid #fecaca'
+              }}>
+                歷史模擬數據 (連線失敗)
               </span>
             )}
           </h3>
