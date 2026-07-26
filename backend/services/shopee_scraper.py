@@ -51,34 +51,56 @@ class ShopeeScraper:
                             
                         market_median_price = statistics.median(prices) if prices else 0
                         
+                        # Calculate scores based on real data
+                        est_monthly_sales = int(total_sales / 12) if total_sales > 12 else total_sales
+                        
+                        # 1. 熱銷分析 (Sales): Base it on total_sales of top 50 items
+                        sales_score = min(99, int((total_sales / 3000) * 100 + 40))
+                        
+                        # 2. 搜索分析 (Search): Correlated to sales volume
+                        search_score = min(95, int((total_sales / 2000) * 100 + 40))
+                        
+                        # 3. 競價分析 (Competition): Base it on price variation (Coefficient of Variation)
+                        if len(prices) > 1:
+                            price_stdev = statistics.stdev(prices)
+                            cv = price_stdev / market_median_price if market_median_price > 0 else 0
+                            # Higher CV means less price war (better score)
+                            comp_score = min(95, int((cv * 100) + 40))
+                        else:
+                            comp_score = 50
+                            
                         return {
                             "success": True,
                             "keyword": keyword,
                             "category_id": category_id,
                             "market_median_price": int(market_median_price),
-                            "estimated_sales_volume_monthly": int(total_sales / 12) if total_sales > 12 else total_sales, # rough estimate
-                            "shopee_search_percentile_score": random.randint(60, 95), # Still need mock for proprietary scores
-                            "competition_percentile_score": random.randint(40, 90),
-                            "sales_percentile_score": random.randint(60, 99),
+                            "estimated_sales_volume_monthly": est_monthly_sales,
+                            "shopee_search_percentile_score": max(40, search_score),
+                            "competition_percentile_score": max(30, comp_score),
+                            "sales_percentile_score": max(50, sales_score),
                             "is_real_data": True
                         }
         except Exception as e:
             print(f"[ShopeeScraper Warning] Real fetch failed ({e}). Falling back to mock data.")
             pass # Fall through to mock logic
 
-        # Fallback Mock logic
+        # Fallback Mock logic (Make it deterministic based on keyword hash)
         time.sleep(1.5)
+        seed = sum(ord(c) for c in keyword)
+        random.seed(seed)
         market_median_price = random.randint(300, 1500)
         sales_volume = random.randint(50, 2000)
         
-        return {
+        fallback_data = {
             "success": True,
             "keyword": keyword,
             "category_id": category_id,
             "market_median_price": market_median_price,
             "estimated_sales_volume_monthly": sales_volume,
-            "shopee_search_percentile_score": random.randint(40, 95),
-            "competition_percentile_score": random.randint(30, 90),
-            "sales_percentile_score": random.randint(50, 99),
+            "shopee_search_percentile_score": random.randint(40, 90),
+            "competition_percentile_score": random.randint(30, 85),
+            "sales_percentile_score": random.randint(50, 95),
             "is_real_data": False
         }
+        random.seed() # reset seed
+        return fallback_data
