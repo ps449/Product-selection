@@ -1,8 +1,13 @@
 import time
 import os
+import platform
 
-# Fix Playwright browser path for PyInstaller
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "0"
+# Force Playwright to use the system-level browser cache, not the _internal folder
+_system = platform.system()
+if _system == "Darwin":
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.expanduser("~/Library/Caches/ms-playwright")
+elif _system == "Windows":
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.expanduser("~\\AppData\\Local\\ms-playwright")
 
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,8 +59,7 @@ async def scheduler_task():
 
 @app.on_event("startup")
 async def startup_event():
-    # Automatically install Playwright browser for the desktop app user
-    print("[System] Checking and installing Playwright browser... this might take a minute on first run.")
+    print("[System] Installing Playwright Chromium to system cache...")
     try:
         import sys
         from playwright.__main__ import main as playwright_main
@@ -67,9 +71,9 @@ async def startup_event():
             pass
         finally:
             sys.argv = old_argv
+        print("[System] Playwright browser ready.")
     except Exception as e:
-        print(f"[System] Failed to install playwright browser: {e}")
-        
+        print(f"[System] Playwright install failed (non-fatal): {e}")
     asyncio.create_task(scheduler_task())
 app.add_middleware(
     CORSMiddleware,
