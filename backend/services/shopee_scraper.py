@@ -45,12 +45,13 @@ def get_playwright_executable():
 class ShopeeScraper:
     def __init__(self):
         self.base_url = "https://shopee.tw/api/v4/search/search_items"
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "application/json",
-            "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Referer": "https://shopee.tw/"
-        }
+        
+    def _get_user_agent(self):
+        system = platform.system()
+        if system == "Darwin":
+            return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        else:
+            return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         
     def get_market_data(self, keyword: str, category_id: int = None):
         """
@@ -58,17 +59,16 @@ class ShopeeScraper:
         Falls back to mock data if blocked by Anti-Bot.
         """
         try:
-            print(f"[ShopeeScraper] Launching Playwright to fetch {keyword}...")
+            print(f"[ShopeeScraper] Launching Playwright (Headless) to fetch {keyword}...")
             with sync_playwright() as p:
-                # Use a persistent context so cookies and logins are saved (Not Incognito)
-                user_data_dir = os.path.join(os.path.expanduser("~"), ".ShopeeAutoSelect_Profile")
-                
-                context = p.chromium.launch_persistent_context(
-                    user_data_dir=user_data_dir,
+                browser = p.chromium.launch(
                     executable_path=get_playwright_executable(),
-                    headless=False,
-                    args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
-                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    headless=True,
+                    args=["--no-sandbox", "--disable-blink-features=AutomationControlled"]
+                )
+                
+                context = browser.new_context(
+                    user_agent=self._get_user_agent(),
                     viewport={"width": 1280, "height": 800}
                 )
                 
@@ -180,7 +180,7 @@ class ShopeeScraper:
                     }''')
                     items = dom_items
                 
-                context.close()
+                browser.close()
 
                 if items:
                     prices = []
