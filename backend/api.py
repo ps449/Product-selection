@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict
+from datetime import datetime
 
 from services.ai_service import analyze_product_input
 from services.trends_service import TrendsService
