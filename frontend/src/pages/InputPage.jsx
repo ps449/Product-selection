@@ -51,7 +51,7 @@ export default function InputPage() {
       <section className="hero-section glass-panel">
         <h1 className="hero-title">商品選品自動化分析</h1>
         <p className="hero-subtitle">
-          上傳商品圖片或輸入商品名稱，系統將自動比對蝦皮搜尋量、競品銷量與 Google 趨勢。
+          輸入商品名稱，系統將自動比對蝦皮搜尋量、競品銷量與 Google 趨勢。
         </p>
         
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', maxWidth: '600px', margin: '0 auto' }}>
