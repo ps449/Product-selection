@@ -78,7 +78,9 @@ class ShopeeScraper:
                             "shopee_search_percentile_score": max(40, search_score),
                             "competition_percentile_score": max(30, comp_score),
                             "sales_percentile_score": max(50, sales_score),
-                            "is_real_data": True
+                            "is_real_data": True,
+                            "raw_prices": prices,
+                            "total_sales": total_sales
                         }
         except Exception as e:
             print(f"[ShopeeScraper Warning] Real fetch failed ({e}). Falling back to mock data.")
@@ -100,7 +102,9 @@ class ShopeeScraper:
             "shopee_search_percentile_score": random.randint(40, 90),
             "competition_percentile_score": random.randint(30, 85),
             "sales_percentile_score": random.randint(50, 95),
-            "is_real_data": False
+            "is_real_data": False,
+            "raw_prices": [market_median_price * 0.8, market_median_price, market_median_price * 1.2],
+            "total_sales": sales_volume * 12
         }
         random.seed() # reset seed
         return fallback_data
