@@ -63,8 +63,8 @@ class ShopeeScraper:
             with sync_playwright() as p:
                 browser = p.chromium.launch(
                     executable_path=get_playwright_executable(),
-                    headless=True,
-                    args=["--no-sandbox", "--disable-blink-features=AutomationControlled"]
+                    headless=False,
+                    args=["--headless=new", "--no-sandbox", "--disable-blink-features=AutomationControlled"]
                 )
                 
                 context = browser.new_context(
