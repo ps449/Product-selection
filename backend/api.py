@@ -169,6 +169,13 @@ def get_discovery(category: str = 'social'):
                 {"rank": 1, "product_name": "平價吹風機", "col3": "4,500", "col4": "3.1星", "col5": "過熱、聲音大、線太短"},
                 {"rank": 2, "product_name": "便宜手機架", "col3": "6,200", "col4": "3.3星", "col5": "易斷、夾不緊、震動"},
                 {"rank": 3, "product_name": "拋棄式雨衣", "col3": "12,000", "col4": "3.5星", "col5": "太薄、易破、有異味"},
+                {"rank": 4, "product_name": "廉價吸塵器", "col3": "3,800", "col4": "3.2星", "col5": "吸力弱、噪音大、易發熱"},
+                {"rank": 5, "product_name": "低價行李箱", "col3": "5,100", "col4": "3.4星", "col5": "輪子卡、拉桿鬆、易刮傷"},
+                {"rank": 6, "product_name": "便宜行動電源", "col3": "8,900", "col4": "3.0星", "col5": "容量虛標、易發燙、充電慢"},
+                {"rank": 7, "product_name": "百元藍牙耳機", "col3": "7,500", "col4": "3.1星", "col5": "易斷線、音質差、漏音"},
+                {"rank": 8, "product_name": "平價電動牙刷", "col3": "4,200", "col4": "3.3星", "col5": "刷毛硬、電池不持久、防水差"},
+                {"rank": 9, "product_name": "廉價車用香氛", "col3": "10,500", "col4": "3.2星", "col5": "味道化學、很快沒味、漏液"},
+                {"rank": 10, "product_name": "便宜摺疊傘", "col3": "9,300", "col4": "3.4星", "col5": "傘骨易斷、難收傘、防風差"},
             ]
         }
     elif category == 'platform':
@@ -180,6 +187,13 @@ def get_discovery(category: str = 'social'):
                 {"rank": 1, "product_name": "純水濕紙巾", "col3": "極快", "col4": "1-2週", "col5": "拚供應鏈成本"},
                 {"rank": 2, "product_name": "廚房清潔劑", "col3": "快", "col4": "1個月", "col5": "拚配方效果"},
                 {"rank": 3, "product_name": "洗衣球", "col3": "極快", "col4": "2-3週", "col5": "拚香味與價格"},
+                {"rank": 4, "product_name": "衛生紙", "col3": "極快", "col4": "1-2週", "col5": "拚紙質與價格"},
+                {"rank": 5, "product_name": "洗髮精", "col3": "中等", "col4": "1.5個月", "col5": "拚控油與香味"},
+                {"rank": 6, "product_name": "寵物尿布墊", "col3": "快", "col4": "2-3週", "col5": "拚吸水與除臭"},
+                {"rank": 7, "product_name": "隱形眼鏡保養液", "col3": "中等", "col4": "1個月", "col5": "拚保濕與殺菌"},
+                {"rank": 8, "product_name": "棉花棒", "col3": "快", "col4": "3-4週", "col5": "拚棉頭材質與價格"},
+                {"rank": 9, "product_name": "洗碗精", "col3": "中等", "col4": "1-1.5個月", "col5": "拚去油與不咬手"},
+                {"rank": 10, "product_name": "垃圾袋", "col3": "快", "col4": "2-3週", "col5": "拚厚度與韌性"},
             ]
         }
     else: # social
