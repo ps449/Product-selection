@@ -21,8 +21,10 @@ jobs:
 
       - name: Build Frontend
         working-directory: ./frontend
+        env:
+          CI: false
         run: |
-          npm install
+          npm install --no-audit --no-fund
           npm run build
 
       - name: Setup Python
