@@ -113,7 +113,6 @@ class TrendsService:
             with open("error.log", "a") as f:
                 f.write(f"Google Trends Error: {str(e)}\\n")
             print(f"[TrendsService] Error fetching Google Trends data: {e}")
-            # 發生錯誤時退回備用數據
             return {
                 "success": True,
                 "keyword": keyword,
@@ -121,6 +120,103 @@ class TrendsService:
                 "percentile_score": 75.0,
                 "source": f"Google Trends (Fallback) - Error: {str(e)}",
                 "is_real_data": False
+            }
+
+    def get_detailed_trend_data(self, keyword: str) -> dict:
+        """
+        Returns rich Google Trends data:
+        - weekly_series: last 12 weeks interest (for chart)
+        - related_keywords: top related search terms
+        - regional_interest: top Taiwan cities/regions
+        - peak_week: when interest peaked
+        - current_vs_peak_pct: how hot it is now vs peak
+        """
+        try:
+            pytrends = TrendReq(hl='zh-TW', tz=-480, requests_args={'verify': False})
+
+            # Weekly data for the last 3 months
+            pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='TW')
+            df = pytrends.interest_over_time()
+
+            weekly_series = []
+            peak_week = ""
+            current_vs_peak = 0
+
+            if not df.empty and keyword in df.columns:
+                series = df[keyword].reset_index()
+                # Last 12 weeks
+                for _, row in series.tail(12).iterrows():
+                    weekly_series.append({
+                        "date": row['date'].strftime('%m/%d'),
+                        "interest": int(row[keyword])
+                    })
+                peak_idx = df[keyword].idxmax()
+                peak_week = peak_idx.strftime('%Y-%m-%d') if hasattr(peak_idx, 'strftime') else str(peak_idx)
+                peak_val = int(df[keyword].max())
+                current_val = int(df[keyword].iloc[-1])
+                current_vs_peak = round((current_val / peak_val * 100) if peak_val > 0 else 0, 1)
+
+            time.sleep(1)
+
+            # Related queries
+            related_queries = []
+            try:
+                related = pytrends.related_queries()
+                if keyword in related:
+                    top_df = related[keyword].get('top')
+                    rising_df = related[keyword].get('rising')
+                    if top_df is not None and not top_df.empty:
+                        for _, row in top_df.head(6).iterrows():
+                            related_queries.append({
+                                "query": row.get('query', ''),
+                                "value": int(row.get('value', 0)),
+                                "type": "top"
+                            })
+                    if rising_df is not None and not rising_df.empty:
+                        for _, row in rising_df.head(4).iterrows():
+                            related_queries.append({
+                                "query": row.get('query', ''),
+                                "value": int(row.get('value', 0)) if str(row.get('value','')) != 'Breakout' else 9999,
+                                "type": "rising"
+                            })
+            except Exception as re:
+                print(f"[TrendsService] Related queries error: {re}")
+
+            time.sleep(1)
+
+            # Regional interest (Taiwan subregions)
+            regional_interest = []
+            try:
+                region_df = pytrends.interest_by_region(resolution='CITY', inc_low_vol=True, inc_geo_code=False)
+                if not region_df.empty and keyword in region_df.columns:
+                    top_regions = region_df[keyword].sort_values(ascending=False).head(6)
+                    for city, val in top_regions.items():
+                        if val > 0:
+                            regional_interest.append({"city": str(city), "interest": int(val)})
+            except Exception as re:
+                print(f"[TrendsService] Regional interest error: {re}")
+
+            return {
+                "success": True,
+                "keyword": keyword,
+                "weekly_series": weekly_series,
+                "related_queries": related_queries,
+                "regional_interest": regional_interest,
+                "peak_week": peak_week,
+                "current_vs_peak_pct": current_vs_peak,
+                "source": "Google Trends (TW)",
+                "is_real_data": True
+            }
+
+        except Exception as e:
+            print(f"[TrendsService] Detailed trend error: {e}")
+            return {
+                "success": False,
+                "keyword": keyword,
+                "weekly_series": [],
+                "related_queries": [],
+                "regional_interest": [],
+                "error": str(e)
             }
 
     def get_trending_shopping_keywords(self):

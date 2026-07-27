@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ScatterChart, Scatter, ZAxis } from 'recharts';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ScatterChart, Scatter, ZAxis, LineChart, Line } from 'recharts';
 import { ArrowLeft, Loader2, Target, BarChart2, TrendingUp, DollarSign, AlertCircle } from 'lucide-react';
 
 export default function Dashboard() {
@@ -290,6 +290,143 @@ export default function Dashboard() {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* 4. Google Trends 詳細分析 */}
+            <div className="glass-panel" style={{ padding: '2rem', gridColumn: '1 / -1' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <TrendingUp size={20} color="#10b981" /> 4. Google Trends 搜尋趨勢
+                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', background: '#d1fae5', color: '#065f46', padding: '0.15rem 0.5rem', borderRadius: '1rem' }}>即時數據</span>
+              </h3>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>過去 12 週台灣地區搜尋熱度走勢，反映消費者需求的真實脈動。</p>
+
+              {/* 12-week line chart */}
+              {result.three_analyses.trends_weekly && result.three_analyses.trends_weekly.length > 0 ? (
+                <div style={{ width: '100%', height: 220 }}>
+                  <ResponsiveContainer>
+                    <LineChart data={result.three_analyses.trends_weekly} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                      <Tooltip formatter={(v) => [`${v}/100`, '搜尋熱度']} />
+                      <Line type="monotone" dataKey="interest" stroke="#10b981" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem' }}>趨勢數據載入中…</p>
+              )}
+
+              {/* Stats row */}
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                {result.three_analyses.trends_peak_week && (
+                  <div style={{ flex: 1, minWidth: '150px', background: '#f0fdf4', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid #bbf7d0' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>搜尋高峰</div>
+                    <div style={{ fontWeight: '700', color: '#065f46', marginTop: '0.25rem' }}>{result.three_analyses.trends_peak_week}</div>
+                  </div>
+                )}
+                {result.three_analyses.trends_current_vs_peak > 0 && (
+                  <div style={{ flex: 1, minWidth: '150px', background: '#f0fdf4', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid #bbf7d0' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>當前 vs 高峰</div>
+                    <div style={{ fontWeight: '700', color: '#065f46', marginTop: '0.25rem' }}>{result.three_analyses.trends_current_vs_peak}%</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Related queries + Regional */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+                {/* Related keywords */}
+                {result.three_analyses.trends_related && result.three_analyses.trends_related.length > 0 && (
+                  <div>
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.75rem' }}>🔍 相關搜尋關鍵字</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {result.three_analyses.trends_related.slice(0, 8).map((q, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.75rem', background: q.type === 'rising' ? '#fef3c7' : '#f8fafc', borderRadius: '0.4rem', border: '1px solid #e2e8f0' }}>
+                          <span style={{ fontSize: '0.85rem' }}>{q.query}</span>
+                          <span style={{ fontSize: '0.75rem', color: q.type === 'rising' ? '#d97706' : '#64748b', fontWeight: '600' }}>
+                            {q.type === 'rising' ? '🚀 上升' : `${q.value}`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Regional interest */}
+                {result.three_analyses.trends_regional && result.three_analyses.trends_regional.length > 0 && (
+                  <div>
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.75rem' }}>📍 台灣地區熱度分佈</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {result.three_analyses.trends_regional.map((r, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.75rem', background: '#f8fafc', borderRadius: '0.4rem', border: '1px solid #e2e8f0' }}>
+                          <span style={{ fontSize: '0.85rem' }}>{r.city}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ width: `${r.interest}px`, maxWidth: '80px', height: '6px', background: '#10b981', borderRadius: '3px' }} />
+                            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.interest}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 5. Facebook Ads Library 廣告競爭分析 */}
+            <div className="glass-panel" style={{ padding: '2rem', gridColumn: '1 / -1' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '1.1rem' }}>📣</span> 5. Facebook 廣告市場競爭
+                {result.three_analyses.fb_status === 'active' ? (
+                  <span style={{ marginLeft: 'auto', fontSize: '0.75rem', background: '#dbeafe', color: '#1e40af', padding: '0.15rem 0.5rem', borderRadius: '1rem' }}>FB Ads Library</span>
+                ) : (
+                  <span style={{ marginLeft: 'auto', fontSize: '0.75rem', background: '#fef3c7', color: '#92400e', padding: '0.15rem 0.5rem', borderRadius: '1rem' }}>待授權</span>
+                )}
+              </h3>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>分析台灣 Facebook 廣告主投放此關鍵字的廣告數量，評估電商廣告競爭強度。</p>
+
+              {result.three_analyses.fb_needs_permission ? (
+                <div style={{ background: '#fef9c3', border: '1px solid #fde047', borderRadius: '0.75rem', padding: '1.25rem' }}>
+                  <p style={{ fontWeight: '600', color: '#713f12', marginBottom: '0.5rem' }}>⚠️ 需申請 ads_library 授權</p>
+                  <p style={{ fontSize: '0.85rem', color: '#713f12', marginBottom: '0.75rem' }}>您的 Facebook App 尚未開通廣告資料庫 API 存取權，請前往申請（通常即時審核）：</p>
+                  <a href="https://www.facebook.com/ads/library/api" target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-block', padding: '0.5rem 1.25rem', background: '#1877f2', color: 'white', borderRadius: '0.4rem', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem' }}>
+                    前往申請 → facebook.com/ads/library/api
+                  </a>
+                  <p style={{ fontSize: '0.8rem', color: '#92400e', marginTop: '0.75rem' }}>申請後重新整理即可看到廣告數據。</p>
+                </div>
+              ) : result.three_analyses.fb_ad_count > 0 ? (
+                <div>
+                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                    <div style={{ flex: 1, minWidth: '130px', background: '#eff6ff', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid #bfdbfe' }}>
+                      <div style={{ fontSize: '2rem', fontWeight: '800', color: '#1d4ed8' }}>{result.three_analyses.fb_ad_count}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.25rem' }}>現有廣告數量</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: '130px', background: '#f0fdf4', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid #bbf7d0' }}>
+                      <div style={{ fontSize: '2rem', fontWeight: '800', color: '#15803d' }}>{result.three_analyses.fb_advertiser_count}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.25rem' }}>廣告主數量</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: '130px', background: '#fef3c7', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid #fde68a' }}>
+                      <div style={{ fontSize: '2rem', fontWeight: '800', color: '#b45309' }}>{result.three_analyses.fb_competition_score}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.25rem' }}>廣告競爭指數 /100</div>
+                    </div>
+                  </div>
+                  {result.three_analyses.fb_top_advertisers && result.three_analyses.fb_top_advertisers.length > 0 && (
+                    <div>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem' }}>🏆 主要廣告主 (Top 5)</h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {result.three_analyses.fb_top_advertisers.map((adv, i) => (
+                          <span key={i} style={{ padding: '0.3rem 0.75rem', background: '#dbeafe', borderRadius: '1rem', fontSize: '0.85rem', color: '#1e40af' }}>
+                            {adv.name} ({adv.ad_count}則)
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                  <p>此關鍵字目前在台灣 Facebook 無主動廣告投放，市場競爭度低 🟢</p>
                 </div>
               )}
             </div>

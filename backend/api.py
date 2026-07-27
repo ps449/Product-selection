@@ -6,6 +6,7 @@ from datetime import datetime
 from services.ai_service import analyze_product_input
 from services.trends_service import TrendsService
 from services.shopee_scraper import ShopeeScraper
+from services.fb_ads_service import FBAdsService
 from core.scoring import evaluate_product
 
 # CSV DB removed
@@ -14,6 +15,7 @@ router = APIRouter()
 
 trends_service = TrendsService()
 scraper = ShopeeScraper()
+fb_ads_service = FBAdsService()
 
 # --- Schemas ---
 class AnalyzeRequest(BaseModel):
@@ -61,8 +63,14 @@ admin_settings = {
         "smtp_email": "",
         "smtp_password": "",
         "target_emails": ""
+    },
+    "integrations": {
+        "fb_access_token": "EAAOtkV7NSJEBRuKZC7zM8OSNibsCNGAgoCp0L7cZC5bodcZA2hsBtfSEa6ZAIojRLxowTPWVp2gPYnFZCG5yiF2RrSbmtCXtjLE0c5R40it882feQnnGGBjFLDFy0KrBJhtEpDgErsKVNA1alqiMcZCiU0a2T7OQbGoKZCTYnmUtJ9AhXjRe4cAnZA9Wfr8bijYBmfq3En0k5VFHYAiZAkJuxWU6a"
     }
 }
+
+# Init FB token on startup
+fb_ads_service.set_token(admin_settings["integrations"]["fb_access_token"])
 
 # --- Endpoints ---
 
@@ -81,10 +89,24 @@ def evaluate_target(req: EvaluateRequest):
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail=market_data.get("error", "獲取真實商品數據失敗，請確認網路狀態或稍後再試。"))
     
-    # 2. Fetch Google Trends Data
+    # 2. Fetch Google Trends (basic score + detailed)
     trend_data = trends_service.get_trend_score(req.keyword)
-    
-    # 3. Score
+    detailed_trends = trends_service.get_detailed_trend_data(req.keyword)
+
+    # 3. Fetch FB Ads Library data (competition signal)
+    fb_token = admin_settings.get("integrations", {}).get("fb_access_token", "")
+    fb_ads_service.set_token(fb_token)
+    fb_data = fb_ads_service.get_ad_competition_data(req.keyword)
+
+    # 4. Score
+    # Blend FB competition score into the competition dimension if available
+    base_competition = market_data.get("competition_percentile_score", 50)
+    if fb_data.get("success") and fb_data.get("ad_count", 0) > 0:
+        fb_comp = fb_data.get("competition_score", 50)
+        blended_competition = int(base_competition * 0.5 + fb_comp * 0.5)
+    else:
+        blended_competition = base_competition
+
     score_result = evaluate_product(
         product_cost=req.product_cost,
         market_median_price=market_data["market_median_price"],
@@ -92,22 +114,21 @@ def evaluate_target(req: EvaluateRequest):
         google_trend_score=trend_data.get("percentile_score", 50),
         shopee_search_score=market_data.get("shopee_search_percentile_score", 50),
         sales_score=market_data.get("sales_percentile_score", 50),
-        competition_score=market_data.get("competition_percentile_score", 50),
+        competition_score=blended_competition,
         social_score=req.social_score,
         scene_score=req.scene_score,
         weights=admin_settings["weights"]
     )
-    
-    # 4. Construct Data for Three Major Analyses
+
+    # 5. Construct Data for Three Major Analyses
     is_real = market_data.get("is_real_data", False)
-    
     total_sales = market_data.get("total_sales", 1000)
     prices = market_data.get("raw_prices", [market_data["market_median_price"]])
     raw_items = market_data.get("raw_items", [])
-    
+
     top_sales_items = sorted(raw_items, key=lambda x: x.get("sales", 0), reverse=True)[:5]
     top_cheap_items = sorted([item for item in raw_items if item.get("price", 0) > 0], key=lambda x: x.get("price", 0))[:5]
-    
+
     pricing_data = []
     if prices:
         min_p, max_p = min(prices), max(prices)
@@ -118,28 +139,53 @@ def evaluate_target(req: EvaluateRequest):
             bins[bin_center] = bins.get(bin_center, 0) + int(total_sales / len(prices))
         pricing_data = [{"price": k, "sales": v} for k, v in sorted(bins.items())]
 
-    three_analyses = {
-        "search_data": [
+    # Google Trends weekly series for search analysis
+    trend_weekly = detailed_trends.get("weekly_series", [])
+    search_data = []
+    if trend_weekly:
+        search_data = [{"month": w["date"], "volume": w["interest"]} for w in trend_weekly[-8:]]
+    else:
+        search_data = [
             {"month": "上月", "volume": int(total_sales * 0.85)},
             {"month": "本月", "volume": total_sales}
-        ],
+        ]
+
+    three_analyses = {
+        "search_data": search_data,
         "sales_data": [
             {"name": "市場均月銷量", "value": market_data["estimated_sales_volume_monthly"]},
             {"name": "Top 1 競品月銷量", "value": int(market_data["estimated_sales_volume_monthly"] * 2.5)}
         ],
         "pricing_data": pricing_data if pricing_data else [{"price": market_data["market_median_price"], "sales": total_sales}],
         "top_sales_items": top_sales_items,
-        "top_cheap_items": top_cheap_items
+        "top_cheap_items": top_cheap_items,
+        # Google Trends enriched
+        "trends_weekly": trend_weekly,
+        "trends_related": detailed_trends.get("related_queries", []),
+        "trends_regional": detailed_trends.get("regional_interest", []),
+        "trends_peak_week": detailed_trends.get("peak_week", ""),
+        "trends_current_vs_peak": detailed_trends.get("current_vs_peak_pct", 0),
+        # FB Ads Library
+        "fb_ad_count": fb_data.get("ad_count", 0),
+        "fb_advertiser_count": fb_data.get("advertiser_count", 0),
+        "fb_competition_score": fb_data.get("competition_score", 0),
+        "fb_top_advertisers": fb_data.get("top_advertisers", []),
+        "fb_sample_ads": fb_data.get("sample_ads", []),
+        "fb_status": "active" if fb_data.get("success") else fb_data.get("error", "未啟用"),
+        "fb_needs_permission": fb_data.get("needs_permission", False),
     }
-    
-    # 5. Check if data is real
+
+    # 6. Build source info
+    sources = [market_data.get('data_source', 'PChome+momo')]
+    if detailed_trends.get('is_real_data'): sources.append('Google Trends')
+    if fb_data.get('success'): sources.append('FB Ads Library')
     is_real_overall = is_real or trend_data.get("is_real_data", False)
 
     return {
         "evaluation": score_result,
         "three_analyses": three_analyses,
         "is_real_data": is_real_overall,
-        "data_source": f"Shopee({market_data.get('is_real_data')}) & Trends({trend_data.get('source')})",
+        "data_source": " + ".join(sources),
         "updated_at": datetime.now().isoformat()
     }
 
