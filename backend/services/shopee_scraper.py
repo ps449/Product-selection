@@ -69,27 +69,33 @@ class ShopeeScraper:
                 if resp.status_code != 200 or len(resp.text) < 10000:
                     break
 
-                text = resp.text
-                # Extract escaped JSON embedded in momo's HTML
-                codes  = re.findall(r'\\"goodsCode\\":\\"(\d+)\\"', text)
-                names  = re.findall(r'\\"goodsName\\":\\"([^\\"]+)\\"', text)
-                prices = re.findall(r'\\"price\\":\\"([\d]+)\\"', text)
-
-                if not codes:
+                # Handle double escaping in Next.js props
+                text = resp.text.replace('\\"', '"')
+                
+                # Use a combined regex to keep code, name, and price aligned
+                matches = re.findall(r'"goodsCode":"(\d+)".*?"goodsName":"([^"]+)".*?"price":"([\d,]+)"', text, re.DOTALL)
+                
+                if not matches:
                     break
 
-                for i, code in enumerate(codes):
-                    name  = names[i]  if i < len(names)  else ""
-                    price = int(prices[i]) if i < len(prices) and prices[i].isdigit() else 0
+                for code, name, price_str in matches:
+                    try:
+                        price = int(price_str.replace(',', ''))
+                    except ValueError:
+                        price = 0
+                        
                     if price <= 0:
                         continue
-                    items.append({
-                        "name": name,
-                        "price": price,
-                        "sales": 0,
-                        "link": f"https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code={code}",
-                        "source": "momo購物",
-                    })
+                        
+                    # 避免抓到重複商品 (同一頁面中可能有重複的推薦區塊)
+                    if not any(item["link"].endswith(code) for item in items):
+                        items.append({
+                            "name": name,
+                            "price": price,
+                            "sales": 0, # momo doesn't expose sales
+                            "link": f"https://www.momoshop.com.tw/goods/GoodsDetail.jsp?i_code={code}",
+                            "source": "momo購物",
+                        })
         except Exception as e:
             print(f"[Scraper] momo error: {e}")
         print(f"[Scraper] momo: {len(items)} items")
