@@ -94,6 +94,19 @@ export default function Dashboard() {
             </div>
             <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>預估毛利率: {evaluation.profit_margin_pct}%</div>
           </div>
+
+          {evaluation.ai_comment && (
+            <div style={{ marginTop: '1.5rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '0.5rem', padding: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--primary-color)', fontWeight: '600' }}>
+                ✨ AI 智慧評語
+              </div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-color)', lineHeight: '1.6' }}>
+                {evaluation.ai_comment.split('。').filter(Boolean).map((text, idx) => (
+                  <p key={idx} style={{ margin: '0.25rem 0' }}>{text}。</p>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Radar Chart */}

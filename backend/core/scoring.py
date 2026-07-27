@@ -64,11 +64,40 @@ def evaluate_product(
         social_score * weights["social"] +
         scene_score * weights["scene"]
     )
+    total_score = round(total_score, 2)
+
+    # 3. AI Smart Comment Generation
+    comments = []
+    if total_score >= 80:
+        comments.append("🌟 綜合評估極佳，具備爆款潛力！")
+    elif total_score >= 60:
+        comments.append("👍 市場反應良好，建議可小量測試。")
+    else:
+        comments.append("⚠️ 整體動能偏弱，進場需謹慎。")
+
+    if google_trend_score >= 75:
+        comments.append("📈 Google 搜尋趨勢顯著上升，市場需求正熱。")
+    elif google_trend_score <= 30:
+        comments.append("📉 Google 搜尋熱度低迷，可能處於淡季或需求衰退。")
+
+    if competition_score >= 80:
+        comments.append("⚔️ 競品與廣告投放數量多，市場競爭極度激烈，建議要有獨特賣點。")
+    elif competition_score <= 40:
+        comments.append("🟢 目前廣告競爭者較少，是一片藍海市場。")
+
+    if sales_score >= 80:
+        comments.append("🔥 電商平台實際銷量極高，消費者購買意願強。")
+
+    if profit_margin >= 0.5:
+        comments.append("💰 毛利率表現優異，有充足利潤空間可進行廣告投放。")
+
+    ai_comment = " ".join(comments)
 
     return {
-        "total_score": round(total_score, 2),
+        "total_score": total_score,
         "position": position,
         "profit_margin_pct": round(profit_margin * 100, 2),
+        "ai_comment": ai_comment,
         "details": {
             "google_trend": google_trend_score,
             "shopee_search": shopee_search_score,
