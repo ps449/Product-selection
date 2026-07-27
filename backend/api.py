@@ -65,7 +65,7 @@ admin_settings = {
         "target_emails": ""
     },
     "integrations": {
-        "fb_access_token": "EAAOtkV7NSJEBSJXaxDAQ58uBJtZBZCj7dOi407kSKjIAzY6NAptdxqWlJUigeZAttEU8kvug1ZBBqjlAMh9Ws2M5EWee0H9e9ZA8l1Cv7LxF87VrOy4Dd8vaiIMrPs9NKak3VJLpAu3hyv6eyQhJJowecsql52WYZCSdR5mruSx8cYGfuk6XKUNvvhc2MU23vygmjocDZC9VFaLhbTcm7RU34yeRcCZAxDFT4EZAgKDDAH76xZAaaFZAGATeuMr6rSvYE0nvydQLivFfbKhblUN0jWS6ZAYZD"
+        "fb_access_token": "EAAOtkV7NSJEBSFMKmNI4fukBBVI7nktUYCAvolNxmcblxe2CGNCa79vRncGOnzfFZCG50LVQT1IPIZCsS61vSnkGj9zTMvJeFDVlU3LKEf8UAfMJUC23APX3YEM9cezBNfi7S7sYcqQrhhc0MS5TIWTawPp7jGEKHVWPgcZAoTfE4yCsLXdqZAyXaooiHeioFDIrfMfWyWABg0G0gziD4c5NL1M1aON69Ouav7iJyYel6m7eFhPHO4wGsMEq8Q3gtHXxgW64CUMZD"
     }
 }
 
