@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ScatterChart, Scatter, ZAxis, LineChart, Line } from 'recharts';
-import { ArrowLeft, Loader2, Target, BarChart2, TrendingUp, DollarSign, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Target, BarChart2, TrendingUp, DollarSign, AlertCircle, Sparkles, Copy, Check } from 'lucide-react';
 
 export default function Dashboard() {
   const location = useLocation();
@@ -10,6 +10,12 @@ export default function Dashboard() {
   
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Marketing Feature State
+  const [isMarketingLoading, setIsMarketingLoading] = useState(false);
+  const [marketingResult, setMarketingResult] = useState(null);
+  const [marketingError, setMarketingError] = useState('');
+  const [copiedField, setCopiedField] = useState('');
 
   useEffect(() => {
     if (!keyword) {
@@ -32,15 +38,43 @@ export default function Dashboard() {
         });
         const data = await res.json();
         setResult(data);
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchEvaluation();
   }, [keyword, navigate]);
+
+  const handleGenerateMarketing = async () => {
+    setIsMarketingLoading(true);
+    setMarketingError('');
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/generate_marketing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword: keyword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMarketingResult(data);
+      } else {
+        setMarketingError(data.detail || data.error || '生成失敗，請確認 API Key 是否設定正確。');
+      }
+    } catch (err) {
+      setMarketingError('連線錯誤，無法生成行銷素材。');
+    } finally {
+      setIsMarketingLoading(false);
+    }
+  };
+
+  const handleCopy = (text, field) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(''), 2000);
+  };
 
   if (isLoading) {
     return (
@@ -178,15 +212,95 @@ export default function Dashboard() {
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
               {analyzeResult.scene_extensions.map(item => (
                 <div key={item} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '0.5rem', flex: '1 1 200px' }}>
-                  <div style={{ fontWeight: '600', color: 'var(--primary-color)' }}>{item}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>可與主商品組成情境套組提升客單價</div>
+                  <h4 style={{ fontWeight: 'bold', color: 'var(--primary-color)', marginBottom: '0.25rem' }}>{item}</h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>可與主商品組成情境套組提升客單價</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Three Major Analyses */}
+        {/* AI Marketing Toolkit */}
+        {!isRejected && (
+          <div className="glass-panel" style={{ padding: '2rem', gridColumn: '1 / -1', border: '2px solid #e0e7ff', background: 'linear-gradient(to right, #ffffff, #f5f3ff)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6d28d9' }}>
+                  <Sparkles size={22} /> AI 情感分析與行銷素材生成
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>一鍵自動預測消費者痛點，並由 AI 為您寫好 FB 廣告文案與蝦皮商品內文。</p>
+              </div>
+              <button 
+                className="btn-primary" 
+                onClick={handleGenerateMarketing} 
+                disabled={isMarketingLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', border: 'none' }}
+              >
+                {isMarketingLoading ? <Loader2 size={18} className="spin" /> : <Sparkles size={18} />}
+                {isMarketingLoading ? 'AI 腦力激盪中...' : '✨ 一鍵生成行銷素材'}
+              </button>
+            </div>
+
+            {marketingError && (
+              <div style={{ padding: '1rem', background: '#fee2e2', color: '#dc2626', borderRadius: '0.5rem', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                ⚠️ {marketingError}
+              </div>
+            )}
+
+            {marketingResult && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', animation: 'fadeIn 0.5s ease-out' }}>
+                
+                {/* 痛點與賣點 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ background: '#fff', border: '1px solid #fecaca', borderRadius: '0.5rem', padding: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <h4 style={{ color: '#dc2626', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      ⚡ 買家常見痛點 (避雷指南)
+                    </h4>
+                    <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.9rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {marketingResult.pain_points.map((pt, i) => <li key={i}>{pt}</li>)}
+                    </ul>
+                  </div>
+                  <div style={{ background: '#fff', border: '1px solid #bbf7d0', borderRadius: '0.5rem', padding: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <h4 style={{ color: '#16a34a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      💡 核心熱門賣點 (高轉化)
+                    </h4>
+                    <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.9rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {marketingResult.selling_points.map((pt, i) => <li key={i}>{pt}</li>)}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* 行銷文案 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ background: '#fff', border: '1px solid #bfdbfe', borderRadius: '0.5rem', padding: '1.25rem', position: 'relative', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <button 
+                      onClick={() => handleCopy(marketingResult.fb_ad_copy, 'fb')}
+                      style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem' }}
+                    >
+                      {copiedField === 'fb' ? <><Check size={14}/> 已複製</> : <><Copy size={14}/> 複製</>}
+                    </button>
+                    <h4 style={{ color: '#2563eb', fontWeight: 'bold', marginBottom: '0.75rem' }}>📢 FB 廣告投放文案</h4>
+                    <p style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', color: '#334155', margin: 0, lineHeight: 1.6 }}>{marketingResult.fb_ad_copy}</p>
+                  </div>
+                  <div style={{ background: '#fff', border: '1px solid #fed7aa', borderRadius: '0.5rem', padding: '1.25rem', position: 'relative', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <button 
+                      onClick={() => handleCopy(marketingResult.shopee_desc, 'shopee')}
+                      style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#f97316', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem' }}
+                    >
+                      {copiedField === 'shopee' ? <><Check size={14}/> 已複製</> : <><Copy size={14}/> 複製</>}
+                    </button>
+                    <h4 style={{ color: '#ea580c', fontWeight: 'bold', marginBottom: '0.75rem' }}>🛍️ 蝦皮商品詳細描述</h4>
+                    <p style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', color: '#334155', margin: 0, lineHeight: 1.6, maxHeight: '200px', overflowY: 'auto' }}>{marketingResult.shopee_desc}</p>
+                  </div>
+                </div>
+
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Three Major Analyses */}
         {!isRejected && result.three_analyses && (
           <>
             {/* 1. 搜索分析 */}

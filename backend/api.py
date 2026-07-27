@@ -7,6 +7,7 @@ from services.ai_service import analyze_product_input
 from services.trends_service import TrendsService
 from services.shopee_scraper import ShopeeScraper
 from services.fb_ads_service import FBAdsService
+from services.ai_marketing import generate_marketing_assets
 from core.scoring import evaluate_product
 
 # CSV DB removed
@@ -81,6 +82,17 @@ def analyze_input(req: AnalyzeRequest):
     result = analyze_product_input(text_input=req.text_input, image_data=req.image_data, api_key=gemini_key)
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+class MarketingRequest(BaseModel):
+    keyword: str
+
+@router.post("/generate_marketing")
+def generate_marketing(req: MarketingRequest):
+    gemini_key = admin_settings.get("integrations", {}).get("gemini_api_key", "")
+    result = generate_marketing_assets(req.keyword, api_key=gemini_key)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "生成失敗"))
     return result
 
 @router.post("/evaluate")
