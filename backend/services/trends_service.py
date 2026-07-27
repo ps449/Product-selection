@@ -6,10 +6,34 @@ from pytrends.request import TrendReq
 
 class TrendsService:
     def __init__(self):
-        # Initialize pytrends with a generic user agent and timezone
-        self.pytrends = TrendReq(hl='zh-TW', tz=-480)
         self.db_path = 'trends_history.db'
         self._init_db()
+        
+    def _get_pytrends(self):
+        import random
+        user_agents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15'
+        ]
+        headers = {'User-Agent': random.choice(user_agents)}
+        return TrendReq(hl='zh-TW', tz=-480, requests_args={'verify': False, 'headers': headers})
+
+    def _execute_with_retry(self, func, max_retries=3, base_delay=5):
+        for attempt in range(max_retries):
+            try:
+                return func()
+            except Exception as e:
+                err_str = str(e)
+                if "429" in err_str or "TooManyRequests" in err_str:
+                    if attempt == max_retries - 1:
+                        raise e
+                    print(f"[TrendsService] 429 Rate Limit hit. Retrying in {base_delay * (2 ** attempt)}s...")
+                    time.sleep(base_delay * (2 ** attempt))
+                else:
+                    raise e
+
         
     def _init_db(self):
         conn = sqlite3.connect(self.db_path)
@@ -71,9 +95,12 @@ class TrendsService:
         Fetches real Google Trends data for a given keyword over the last 3 months.
         """
         try:
-            pytrends = TrendReq(hl='zh-TW', tz=-480, requests_args={'verify': False})
-            pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='TW')
-            df = pytrends.interest_over_time()
+            def fetch_action():
+                pytrends = self._get_pytrends()
+                pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='TW')
+                return pytrends.interest_over_time()
+
+            df = self._execute_with_retry(fetch_action)
             
             if df.empty:
                 return {
@@ -132,11 +159,14 @@ class TrendsService:
         - current_vs_peak_pct: how hot it is now vs peak
         """
         try:
-            pytrends = TrendReq(hl='zh-TW', tz=-480, requests_args={'verify': False})
+            pytrends = self._get_pytrends()
+
+            def fetch_iot():
+                pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='TW')
+                return pytrends.interest_over_time()
 
             # Weekly data for the last 3 months
-            pytrends.build_payload([keyword], cat=0, timeframe='today 3-m', geo='TW')
-            df = pytrends.interest_over_time()
+            df = self._execute_with_retry(fetch_iot)
 
             weekly_series = []
             peak_week = ""
@@ -161,7 +191,7 @@ class TrendsService:
             # Related queries
             related_queries = []
             try:
-                related = pytrends.related_queries()
+                related = self._execute_with_retry(lambda: pytrends.related_queries())
                 if keyword in related:
                     top_df = related[keyword].get('top')
                     rising_df = related[keyword].get('rising')
@@ -187,7 +217,7 @@ class TrendsService:
             # Regional interest (Taiwan subregions)
             regional_interest = []
             try:
-                region_df = pytrends.interest_by_region(resolution='CITY', inc_low_vol=True, inc_geo_code=False)
+                region_df = self._execute_with_retry(lambda: pytrends.interest_by_region(resolution='CITY', inc_low_vol=True, inc_geo_code=False))
                 if not region_df.empty and keyword in region_df.columns:
                     top_regions = region_df[keyword].sort_values(ascending=False).head(6)
                     for city, val in top_regions.items():
@@ -243,8 +273,12 @@ class TrendsService:
         try:
             # Attempt to fetch real data for the first keyword to check API health.
             # cat=18 is Shopping category.
-            self.pytrends.build_payload([seed_keywords[0]["kw"]], cat=18, timeframe='today 3-m', geo='TW')
-            df = self.pytrends.interest_over_time()
+            def fetch_health():
+                pt = self._get_pytrends()
+                pt.build_payload([seed_keywords[0]["kw"]], cat=18, timeframe='today 3-m', geo='TW')
+                return pt.interest_over_time()
+                
+            df = self._execute_with_retry(fetch_health, max_retries=1) # Fast fail for health check
             api_alive = not df.empty
         except Exception as e:
             print(f"[TrendsService] Pytrends rate limited or failed: {e}. Falling back to mock calculation.")
