@@ -329,7 +329,11 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem' }}>趨勢數據載入中…</p>
+                <div style={{ textAlign: 'center', padding: '3rem 2rem', color: '#94a3b8', background: '#f8fafc', borderRadius: '0.5rem', border: '1px dashed #cbd5e1' }}>
+                  <AlertCircle size={32} style={{ margin: '0 auto 1rem', color: '#94a3b8' }} />
+                  <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>無法獲取真實搜尋趨勢數據</p>
+                  <p style={{ fontSize: '0.85rem' }}>Google Trends API 請求受到限制 (Rate Limit)，為確保數據真實性，我們不提供模擬數據。請稍後再試。</p>
+                </div>
               )}
 
               {/* Stats row */}
