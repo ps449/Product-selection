@@ -1,40 +1,100 @@
 import os
 import json
+import base64
+import requests
 
-# In a real scenario, this would use google.generativeai or openai SDK.
-# For MVP, we provide a mock interface that simulates the LLM behavior.
-
-def analyze_product_input(image_path: str = None, text_input: str = None):
+def analyze_product_input(image_path: str = None, text_input: str = None, image_data: str = None, api_key: str = ""):
     """
-    Simulates calling an AI model (like Gemini Vision) to categorize the product.
+    Calls Google Gemini REST API to categorize the product.
     Returns a standardized dictionary.
     """
-    # Mock logic based on keywords
-    input_text = text_input.lower() if text_input else "雨衣" # default mock
+    input_text = text_input.strip() if text_input else ""
     
-    if "雨衣" in input_text:
+    if not api_key:
+        # Fallback if no API key is provided: Just return the input
+        name = input_text if input_text else "未知商品"
         return {
-            "product_name": "機車雨衣",
-            "shopee_category": "機車/自行車 > 雨具",
-            "confidence": 0.95,
-            "keywords": ["雨衣", "機車雨衣", "兩件式雨衣"],
-            "scene_extensions": ["雨鞋套", "安全帽鏡片防水貼", "防水背包"]
-        }
-    elif "滑雪" in input_text:
-        return {
-            "product_name": "滑雪機",
-            "shopee_category": "戶外休閒 > 運動器材",
-            "confidence": 0.90,
-            "keywords": ["滑雪機", "室內滑雪", "核心訓練"],
-            "scene_extensions": ["防滑墊", "運動毛巾", "護腕"]
-        }
-    else:
-        # User requested to NEVER show category suggestions as it causes keyword errors.
-        # Directly accept whatever the user typed as a high-confidence match.
-        return {
-            "product_name": text_input,
+            "product_name": name,
             "shopee_category": "綜合分類",
             "confidence": 0.99,
-            "keywords": [text_input],
+            "keywords": [name],
+            "scene_extensions": ["無"]
+        }
+        
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        
+        prompt = f"""
+You are an e-commerce product analysis AI. Your task is to extract product info for Taiwan market.
+User Input Keyword: "{input_text}"
+
+Return ONLY a valid JSON string (no markdown formatting, no code blocks, just raw JSON).
+The JSON MUST strictly follow this structure:
+{{
+  "product_name": "Core product name string",
+  "shopee_category": "Shopee TW category (e.g., 居家生活 > 日用品)",
+  "confidence": 0.95,
+  "keywords": ["EXACTLY_WHAT_USER_TYPED_NO_ADDITIONS"],
+  "scene_extensions": ["3 related products for upselling"]
+}}
+
+CRITICAL INSTRUCTION:
+For `keywords`, you MUST ONLY return the exact keyword the user typed in the `User Input Keyword`. Do NOT add any extra descriptive keywords like "健身", "放鬆", etc. If the user typed "機車夾克", `keywords` must be `["機車夾克"]`. This is to prevent search keyword pollution.
+"""
+        parts = []
+        if image_data:
+            # Handle base64 image (format usually data:image/jpeg;base64,.....)
+            mime_type = "image/jpeg"
+            img_b64 = image_data
+            if ',' in image_data:
+                header, img_b64 = image_data.split(',', 1)
+                if 'data:' in header and ';' in header:
+                    mime_type = header.replace('data:', '').split(';')[0]
+            
+            parts.append({
+                "inline_data": {
+                    "mime_type": mime_type,
+                    "data": img_b64
+                }
+            })
+            prompt += "\\nSince an image is provided, identify the main product in the image and use it as `product_name` and `keywords`."
+            
+        parts.append({"text": prompt})
+        
+        payload = {
+            "contents": [{
+                "parts": parts
+            }]
+        }
+        
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        
+        resp_data = response.json()
+        text_resp = resp_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        
+        if text_resp.startswith("```json"):
+            text_resp = text_resp.replace("```json", "", 1)
+        if text_resp.endswith("```"):
+            text_resp = text_resp[:text_resp.rfind("```")]
+            
+        parsed = json.loads(text_resp.strip())
+        
+        # Enforce rule: if text_input was provided, ensure keywords strictly matches text_input
+        if input_text and not image_data:
+            parsed["keywords"] = [input_text]
+            
+        return parsed
+        
+    except Exception as e:
+        print(f"[AI Service] Gemini Error: {e}")
+        # Fallback on error
+        name = input_text if input_text else "未知商品"
+        return {
+            "product_name": name,
+            "shopee_category": "綜合分類",
+            "confidence": 0.99,
+            "keywords": [name],
             "scene_extensions": ["無"]
         }

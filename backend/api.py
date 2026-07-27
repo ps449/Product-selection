@@ -65,7 +65,8 @@ admin_settings = {
         "target_emails": ""
     },
     "integrations": {
-        "fb_access_token": "EAAOtkV7NSJEBSFMKmNI4fukBBVI7nktUYCAvolNxmcblxe2CGNCa79vRncGOnzfFZCG50LVQT1IPIZCsS61vSnkGj9zTMvJeFDVlU3LKEf8UAfMJUC23APX3YEM9cezBNfi7S7sYcqQrhhc0MS5TIWTawPp7jGEKHVWPgcZAoTfE4yCsLXdqZAyXaooiHeioFDIrfMfWyWABg0G0gziD4c5NL1M1aON69Ouav7iJyYel6m7eFhPHO4wGsMEq8Q3gtHXxgW64CUMZD"
+        "fb_access_token": "EAAOtkV7NSJEBSFMKmNI4fukBBVI7nktUYCAvolNxmcblxe2CGNCa79vRncGOnzfFZCG50LVQT1IPIZCsS61vSnkGj9zTMvJeFDVlU3LKEf8UAfMJUC23APX3YEM9cezBNfi7S7sYcqQrhhc0MS5TIWTawPp7jGEKHVWPgcZAoTfE4yCsLXdqZAyXaooiHeioFDIrfMfWyWABg0G0gziD4c5NL1M1aON69Ouav7iJyYel6m7eFhPHO4wGsMEq8Q3gtHXxgW64CUMZD",
+        "gemini_api_key": ""
     }
 }
 
@@ -76,7 +77,8 @@ fb_ads_service.set_token(admin_settings["integrations"]["fb_access_token"])
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 def analyze_input(req: AnalyzeRequest):
-    result = analyze_product_input(text_input=req.text_input)
+    gemini_key = admin_settings.get("integrations", {}).get("gemini_api_key", "")
+    result = analyze_product_input(text_input=req.text_input, image_data=req.image_data, api_key=gemini_key)
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
     return result
@@ -201,6 +203,7 @@ def get_settings():
         "status": "success", 
         "weights": admin_settings["weights"],
         "automation": admin_settings["automation"],
+        "integrations": admin_settings.get("integrations", {}),
         "crawler_status": trends_service.get_crawler_status()
     }
 
@@ -210,6 +213,8 @@ def update_settings(new_settings: dict):
         admin_settings["weights"] = new_settings["weights"]
     if "automation" in new_settings:
         admin_settings["automation"] = new_settings["automation"]
+    if "integrations" in new_settings:
+        admin_settings["integrations"] = new_settings["integrations"]
     return {"status": "success", "settings": admin_settings}
 
 @router.get("/discovery")

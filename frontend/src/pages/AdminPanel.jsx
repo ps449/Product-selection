@@ -11,6 +11,10 @@ export default function AdminPanel() {
     smtp_password: '',
     target_emails: ''
   });
+  const [integrations, setIntegrations] = useState({
+    fb_access_token: '',
+    gemini_api_key: ''
+  });
   const [crawlerStatus, setCrawlerStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -28,6 +32,9 @@ export default function AdminPanel() {
         setWeights(displayWeights);
         if (data.automation) {
           setAutomation(data.automation);
+        }
+        if (data.integrations) {
+          setIntegrations(data.integrations);
         }
         if (data.crawler_status) {
           setCrawlerStatus(data.crawler_status);
@@ -54,7 +61,8 @@ export default function AdminPanel() {
     // convert back to decimal
     const payload = {
       weights: {},
-      automation: automation
+      automation: automation,
+      integrations: integrations
     };
     for (const [k, v] of Object.entries(weights)) {
       payload.weights[k] = v / 100;
@@ -128,6 +136,37 @@ export default function AdminPanel() {
             {message}
           </div>
         )}
+      </div>
+
+      <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
+          API 金鑰設定 (Integrations)
+        </h2>
+        
+        <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: '1fr' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.95rem', fontWeight: 'bold' }}>Google Gemini API Key</label>
+            <input 
+              type="password" 
+              value={integrations.gemini_api_key || ''} 
+              onChange={(e) => setIntegrations({ ...integrations, gemini_api_key: e.target.value })}
+              placeholder="AI Studio 申請的 Gemini API Key"
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontFamily: 'monospace' }}
+            />
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>用於智能辨識商品名稱、分類、與使用場景擴充建議。</p>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.95rem', fontWeight: 'bold' }}>Facebook Ads Token</label>
+            <input 
+              type="password" 
+              value={integrations.fb_access_token || ''} 
+              onChange={(e) => setIntegrations({ ...integrations, fb_access_token: e.target.value })}
+              placeholder="EAAG..."
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontFamily: 'monospace' }}
+            />
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>用於抓取台灣 Facebook 電商廣告市場競爭數據。</p>
+          </div>
+        </div>
       </div>
 
       <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
