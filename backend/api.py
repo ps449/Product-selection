@@ -66,7 +66,7 @@ admin_settings = {
         "target_emails": ""
     },
     "integrations": {
-        "fb_access_token": "EAAOtkV7NSJEBSFMKmNI4fukBBVI7nktUYCAvolNxmcblxe2CGNCa79vRncGOnzfFZCG50LVQT1IPIZCsS61vSnkGj9zTMvJeFDVlU3LKEf8UAfMJUC23APX3YEM9cezBNfi7S7sYcqQrhhc0MS5TIWTawPp7jGEKHVWPgcZAoTfE4yCsLXdqZAyXaooiHeioFDIrfMfWyWABg0G0gziD4c5NL1M1aON69Ouav7iJyYel6m7eFhPHO4wGsMEq8Q3gtHXxgW64CUMZD",
+        "fb_access_token": "EAAOtkV7NSJEBSKvXuIZBnYQHkNHbwJSVkFguNPpSn3QvpW653hYSFp6TYGFYZAGEBtx45eOzkHs09koCM16OegCegTLZBxJJjYeF6kHtATgMAZBCTZCM0RFhc8ahIVO8FoYzFyoikIlCcTY3Ob1xWuKEonT2KssZC4u8EvL5saMQZArCUNckLYtr7d1dMTDAd468LIAIhYeJPmRcqqfWBtRxzJuXIwXZCgZBz",
         "gemini_api_key": ""
     }
 }
