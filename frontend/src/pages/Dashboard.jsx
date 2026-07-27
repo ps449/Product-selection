@@ -516,15 +516,15 @@ export default function Dashboard() {
               </h3>
               <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>分析台灣 Facebook 廣告主投放此關鍵字的廣告數量，評估電商廣告競爭強度。</p>
 
-              {result.three_analyses.fb_needs_permission ? (
+              {result.three_analyses.fb_status !== 'active' ? (
                 <div style={{ background: '#fef9c3', border: '1px solid #fde047', borderRadius: '0.75rem', padding: '1.25rem' }}>
-                  <p style={{ fontWeight: '600', color: '#713f12', marginBottom: '0.5rem' }}>⚠️ 需申請 ads_library 授權</p>
-                  <p style={{ fontSize: '0.85rem', color: '#713f12', marginBottom: '0.75rem' }}>您的 Facebook App 尚未開通廣告資料庫 API 存取權，請前往申請（通常即時審核）：</p>
+                  <p style={{ fontWeight: '600', color: '#713f12', marginBottom: '0.5rem' }}>⚠️ 需設定 Token 或申請 ads_library 授權</p>
+                  <p style={{ fontSize: '0.85rem', color: '#713f12', marginBottom: '0.75rem' }}>您的 Facebook App 尚未開通廣告資料庫 API 存取權，或是您尚未於後台設定 Access Token。</p>
                   <a href="https://www.facebook.com/ads/library/api" target="_blank" rel="noopener noreferrer"
                     style={{ display: 'inline-block', padding: '0.5rem 1.25rem', background: '#1877f2', color: 'white', borderRadius: '0.4rem', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem' }}>
                     前往申請 → facebook.com/ads/library/api
                   </a>
-                  <p style={{ fontSize: '0.8rem', color: '#92400e', marginTop: '0.75rem' }}>申請後重新整理即可看到廣告數據。</p>
+                  <p style={{ fontSize: '0.8rem', color: '#92400e', marginTop: '0.75rem' }}>申請並於設定頁面儲存 Token 後，重新整理即可看到廣告數據。</p>
                 </div>
               ) : result.three_analyses.fb_ad_count > 0 ? (
                 <div>
