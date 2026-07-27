@@ -29,27 +29,12 @@ def analyze_product_input(image_path: str = None, text_input: str = None):
             "scene_extensions": ["防滑墊", "運動毛巾", "護腕"]
         }
     else:
-        # Confidence low, return suggestions
+        # User requested to NEVER show category suggestions as it causes keyword errors.
+        # Directly accept whatever the user typed as a high-confidence match.
         return {
-            "needs_disambiguation": True,
-            "suggestions": [
-                {
-                    "product_name": text_input,
-                    "shopee_category": "運動健身 > 健身器材",
-                    "keywords": [text_input, "健身", "放鬆"],
-                    "scene_extensions": ["瑜珈墊", "運動水壺", "護具"]
-                },
-                {
-                    "product_name": text_input + "配件",
-                    "shopee_category": "居家生活 > 日用品",
-                    "keywords": [text_input, "收納袋", "清潔"],
-                    "scene_extensions": ["收納盒", "清潔劑", "毛巾"]
-                },
-                {
-                    "product_name": text_input,
-                    "shopee_category": "其他 > 未分類商品",
-                    "keywords": [text_input, "推薦商品"],
-                    "scene_extensions": ["無"]
-                }
-            ]
+            "product_name": text_input,
+            "shopee_category": "綜合分類",
+            "confidence": 0.99,
+            "keywords": [text_input],
+            "scene_extensions": ["無"]
         }
